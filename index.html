@@ -6,18 +6,18 @@
     <title>Arena Senai: Overdrive</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        :root { --neon: #00ffcc; --p1: #00ff41; --p2: #ff00ff; --gold: #ffcc00; --bg: #050508; }
+        :root { --neon: #00ffcc; --p1: #00ff41; --p2: #ff00ff; --gold: #ffcc00; --bg: #050508; --mana: #0088ff; }
         body { background: var(--bg); color: white; font-family: 'Segoe UI', Orbitron, sans-serif; margin: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
         
         .screen { position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle at center, #101020 0%, #000 100%); z-index: 100; transition: 0.5s; }
         .hidden { opacity: 0; pointer-events: none; transform: scale(1.1); z-index: -1; }
-        .menu-card { background: rgba(0, 0, 0, 0.8); padding: 40px; border-radius: 20px; border: 1px solid var(--neon); backdrop-filter: blur(15px); text-align: center; box-shadow: 0 0 50px rgba(0, 255, 204, 0.15); width: 450px; }
-        h1 { font-size: 3.5rem; text-shadow: 0 0 20px var(--neon); color: var(--neon); margin: 0 0 10px 0; font-style: italic; }
+        .menu-card { background: rgba(0, 0, 0, 0.8); padding: 30px; border-radius: 20px; border: 1px solid var(--neon); backdrop-filter: blur(15px); text-align: center; box-shadow: 0 0 50px rgba(0, 255, 204, 0.15); width: 450px; }
+        h1 { font-size: 3rem; text-shadow: 0 0 20px var(--neon); color: var(--neon); margin: 0 0 10px 0; font-style: italic; }
         
         input[type="text"] { width: 90%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid var(--neon); color: white; font-size: 1.2rem; text-align: center; margin-bottom: 20px; outline: none; }
         
-        .char-grid { display: flex; justify-content: space-around; margin-bottom: 20px; }
-        .char-select { width: 60px; height: 60px; border: 2px solid #555; cursor: pointer; border-radius: 10px; transition: 0.3s; background-size: cover; background-position: center; }
+        .char-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .char-select { width: 50px; height: 50px; border: 2px solid #555; cursor: pointer; border-radius: 10px; transition: 0.3s; background-size: cover; background-position: center; }
         .char-select.active { border-color: var(--gold); box-shadow: 0 0 15px var(--gold); transform: scale(1.1); }
 
         .btn-group { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
@@ -25,15 +25,19 @@
         button:hover { background: var(--neon); color: #000; box-shadow: 0 0 20px var(--neon); }
         .btn-full { width: 100%; flex: none; }
 
-        /* HUD e Placar */
+        /* HUD, Placar e Barras */
         #hud { position: absolute; top: 0; width: 100%; display: flex; justify-content: space-between; align-items: flex-start; padding: 15px 50px; box-sizing: border-box; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); z-index: 50; }
-        .team-hud { display: flex; flex-direction: column; gap: 5px; width: 250px; }
-        .hp-label { font-size: 1rem; font-weight: bold; display: flex; justify-content: space-between;}
-        .hp-bar { width: 100%; height: 10px; background: #111; position: relative; border-radius: 5px; overflow: hidden; }
+        .team-hud { display: flex; flex-direction: column; gap: 10px; width: 250px; }
+        .hp-label { font-size: 0.9rem; font-weight: bold; display: flex; justify-content: space-between; margin-bottom: 2px;}
+        .hp-bar { width: 100%; height: 8px; background: #111; position: relative; border-radius: 3px; overflow: hidden; margin-bottom: 2px; }
         .hp-fill { height: 100%; width: 100%; transition: width 0.2s; }
+        .mana-bar { width: 100%; height: 4px; background: #111; position: relative; border-radius: 2px; overflow: hidden; }
+        .mana-fill { height: 100%; width: 0%; background: var(--mana); transition: width 0.2s; box-shadow: 0 0 5px var(--mana); }
         
-        #scoreboard { background: rgba(0,0,0,0.8); border: 2px solid var(--gold); padding: 10px 30px; border-radius: 10px; text-align: center; margin-top: -10px; box-shadow: 0 0 20px rgba(255, 204, 0, 0.2); }
-        .score-text { font-size: 2rem; font-weight: bold; color: white; display: flex; gap: 20px; align-items: center;}
+        .status-icons { font-size: 0.8rem; color: #ccc; display: flex; gap: 10px; }
+
+        #scoreboard { background: rgba(0,0,0,0.8); border: 2px solid var(--gold); padding: 5px 20px; border-radius: 10px; text-align: center; margin-top: -10px; box-shadow: 0 0 20px rgba(255, 204, 0, 0.2); }
+        .score-text { font-size: 1.8rem; font-weight: bold; color: white; display: flex; gap: 20px; align-items: center;}
         .score-t1 { color: var(--p1); text-shadow: 0 0 10px var(--p1); }
         .score-t2 { color: var(--p2); text-shadow: 0 0 10px var(--p2); }
 
@@ -41,7 +45,6 @@
         #lobby-players-list { background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px; text-align: left; margin: 20px 0; min-height: 100px; border: 1px solid #333; }
         .lobby-slot { padding: 5px; font-size: 1.1rem; border-bottom: 1px solid #222; }
 
-        /* Tela de Vitória Overlay */
         #victory-screen { position: absolute; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 90; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         #victory-title { font-size: 4rem; margin-bottom: 20px; text-transform: uppercase; font-style: italic; }
     </style>
@@ -51,16 +54,18 @@
     <div id="menu" class="screen">
         <div class="menu-card">
             <h1>ARENA SENAI</h1>
-            <p style="color: #888;">OVERDRIVE PROTOCOL</p>
             
             <input type="text" id="player-name" placeholder="DIGITE SEU NOME" maxlength="10">
             
-            <p style="margin: 10px 0; color: #aaa;">SELECIONE SUA UNIDADE</p>
+            <p style="margin: 5px 0; color: #aaa; font-size: 0.9rem;">SELECIONE SUA UNIDADE (1 AO 7)</p>
             <div class="char-grid">
                 <div class="char-select active" id="sel-p1" style="background-image: url('player1.png');" onclick="selectChar('p1')"></div>
                 <div class="char-select" id="sel-p2" style="background-image: url('player2.png');" onclick="selectChar('p2')"></div>
                 <div class="char-select" id="sel-p3" style="background-image: url('player3.png');" onclick="selectChar('p3')"></div>
                 <div class="char-select" id="sel-p4" style="background-image: url('player4.png');" onclick="selectChar('p4')"></div>
+                <div class="char-select" id="sel-p5" style="background-image: url('player5.png');" onclick="selectChar('p5')"></div>
+                <div class="char-select" id="sel-p6" style="background-image: url('player6.png');" onclick="selectChar('p6')"></div>
+                <div class="char-select" id="sel-p7" style="background-image: url('player7.png');" onclick="selectChar('p7')"></div>
             </div>
 
             <div class="btn-group">
@@ -69,8 +74,8 @@
                 <button onclick="startGame('host2v2')">CRIAR SALA 2v2</button>
             </div>
             
-            <div style="margin-top: 15px; border-top: 1px solid #333; padding-top: 15px;">
-                <input type="text" id="join-id" placeholder="COLAR ID DA SALA DO AMIGO" style="margin-bottom: 10px; font-size: 0.9rem;">
+            <div style="margin-top: 10px; border-top: 1px solid #333; padding-top: 15px;">
+                <input type="text" id="join-id" placeholder="COLAR ID DO AMIGO" style="margin-bottom: 10px; font-size: 0.9rem;">
                 <button id="btn-join" onclick="joinGame()" class="btn-full" style="border-color: var(--p2); color: var(--p2);">ENTRAR NA SALA</button>
             </div>
         </div>
@@ -87,22 +92,18 @@
             </div>
 
             <div id="lobby-players-list"></div>
-            <p id="lobby-status" style="color: var(--gold); font-size: 1.2rem; font-weight: bold; animation: pulse 1s infinite alternate;">Aguardando jogadores...</p>
+            <p id="lobby-status" style="color: var(--gold); font-size: 1.2rem; font-weight: bold;">Aguardando jogadores...</p>
         </div>
     </div>
 
     <div id="hud" class="hidden">
         <div class="team-hud" id="team1-hud" style="color: var(--p1);"></div>
-        
         <div id="scoreboard">
             <div style="font-size: 0.8rem; color: var(--gold); margin-bottom: 5px;">PLACAR GLOBAL</div>
             <div class="score-text">
-                <span id="score-val-1" class="score-t1">0</span>
-                <span>X</span>
-                <span id="score-val-2" class="score-t2">0</span>
+                <span id="score-val-1" class="score-t1">0</span> <span>X</span> <span id="score-val-2" class="score-t2">0</span>
             </div>
         </div>
-
         <div class="team-hud" id="team2-hud" style="color: var(--p2); text-align: right;"></div>
     </div>
 
@@ -110,7 +111,7 @@
         <h1 id="victory-title" style="color: var(--gold);">VITÓRIA!</h1>
         <p id="victory-subtitle" style="color: #aaa; font-size: 1.2rem; margin-bottom: 30px;">A ARENA FOI DOMINADA</p>
         <button id="btn-restart" onclick="restartRound()" style="font-size: 1.2rem; padding: 15px 40px; border-color: var(--gold); color: var(--gold); display: none;">NOVA RODADA</button>
-        <p id="txt-wait-host" style="color: #aaa; font-style: italic; display: none;">Aguardando o Host iniciar a nova rodada...</p>
+        <p id="txt-wait-host" style="color: #aaa; font-style: italic; display: none;">Aguardando o Host iniciar...</p>
     </div>
 
     <canvas id="game" width="1000" height="600"></canvas>
@@ -119,22 +120,25 @@
         const canvas = document.getElementById('game');
         const ctx = canvas.getContext('2d');
         
-        const imgs = { p1: new Image(), p2: new Image(), p3: new Image(), p4: new Image(), cura: new Image(), tiro: new Image() };
+        // Carregamento de todos os assets novos
+        const imgs = { 
+            p1: new Image(), p2: new Image(), p3: new Image(), p4: new Image(), 
+            p5: new Image(), p6: new Image(), p7: new Image(),
+            cura: new Image(), tiro: new Image(), 
+            shield: new Image(), especial: new Image(), granada: new Image(), freeze: new Image() 
+        };
         imgs.p1.src = 'player1.png'; imgs.p2.src = 'player2.png'; imgs.p3.src = 'player3.png'; imgs.p4.src = 'player4.png';
+        imgs.p5.src = 'player5.png'; imgs.p6.src = 'player6.png'; imgs.p7.src = 'player7.png';
         imgs.cura.src = 'cura.png'; imgs.tiro.src = 'tiro.png';
+        imgs.shield.src = 'shield.png'; imgs.especial.src = 'especial.png'; 
+        imgs.granada.src = 'granada.png'; imgs.freeze.src = 'freeze.png';
 
-        let mySprite = 'p1';
-        let myName = 'ALUNO';
-        let peer, connections = [];
-        let isHost = false;
-        let myPlayerId = 'p_0'; 
-        let gridOffset = 0, screenShake = 0, particles = [];
-        let maxPlayers = 1;
+        let mySprite = 'p1', myName = 'ALUNO';
+        let peer, connections = [], isHost = false, myPlayerId = 'p_0'; 
+        let gridOffset = 0, screenShake = 0, particles = [], maxPlayers = 1;
 
-        // Estado do Jogo e Placar
         let gameState = { players: {}, items: [], bullets: [] };
-        let scores = { t1: 0, t2: 0 };
-        let gameEnded = false;
+        let scores = { t1: 0, t2: 0 }, gameEnded = false;
 
         function selectChar(charId) {
             mySprite = charId;
@@ -142,45 +146,39 @@
             document.getElementById('sel-' + charId).classList.add('active');
         }
 
+        // Novo Status de Player (Adicionado Mana, Shield, Granadas e Freeze)
         function initPlayerState(id, name, sprite, team, isAi = false) {
             let teamArr = Object.values(gameState.players).filter(p => p.team === team);
             let idx = teamArr.length;
-            
             const startX = team === 1 ? 50 : 890;
             const startY = 200 + (idx * 150); 
             
             gameState.players[id] = { 
                 id: id, name: name || 'BOT', sprite: sprite, team: team,
-                x: startX, y: startY, hp: 100, triple: 0, isAi: isAi,
-                targetY: startY
+                x: startX, y: startY, hp: 100, isAi: isAi, targetY: startY,
+                triple: 0, shield: 0, mana: 0, grenades: 0, freezeTimer: 0
             };
         }
 
-        // --- SISTEMA DE REDE E LOBBY ---
         function startGame(mode) {
             let inputName = document.getElementById('player-name').value;
             if(inputName) myName = inputName.toUpperCase();
-            
             document.getElementById('menu').classList.add('hidden');
 
             if(mode === 'pve') {
                 document.getElementById('hud').classList.remove('hidden');
-                isHost = true;
-                myPlayerId = 'player1';
+                isHost = true; myPlayerId = 'player1';
                 initPlayerState(myPlayerId, myName, mySprite, 1, false);
                 initPlayerState('bot_senai', 'IA SENAI', 'p2', 2, true);
                 requestAnimationFrame(gameLoop);
             } else {
-                isHost = true;
-                maxPlayers = mode === 'host1v1' ? 2 : 4;
+                isHost = true; maxPlayers = mode === 'host1v1' ? 2 : 4;
                 document.getElementById('lobby').classList.remove('hidden');
                 document.getElementById('lobby-mode').innerText = mode === 'host1v1' ? 'COMBATE 1 VS 1' : 'COMBATE 2 VS 2';
                 
-                if(peer) peer.destroy();
-                peer = new Peer();
-                
+                if(peer) peer.destroy(); peer = new Peer();
                 peer.on('open', id => { document.getElementById('lobby-id').innerText = id; });
-                peer.on('error', err => { alert("Erro ao criar sala!"); location.reload(); });
+                peer.on('error', err => { alert("Erro na sala!"); location.reload(); });
                 
                 myPlayerId = 'host';
                 initPlayerState(myPlayerId, myName, mySprite, 1, false);
@@ -188,8 +186,7 @@
 
                 peer.on('connection', conn => {
                     connections.push(conn);
-                    let newClientId = 'client_' + connections.length;
-                    conn.on('data', data => handleClientData(newClientId, data, conn));
+                    conn.on('data', data => handleClientData('client_' + connections.length, data, conn));
                 });
             }
         }
@@ -197,208 +194,167 @@
         function joinGame() {
             let inputName = document.getElementById('player-name').value;
             if(inputName) myName = inputName.toUpperCase();
-            
             let hostId = document.getElementById('join-id').value.trim();
-            if(!hostId) { alert("Cole o ID da sala!"); return; }
+            if(!hostId) return;
 
-            let btn = document.getElementById('btn-join');
-            btn.innerText = "CONECTANDO...";
-
-            if(peer) peer.destroy();
-            peer = new Peer();
+            document.getElementById('btn-join').innerText = "CONECTANDO...";
+            if(peer) peer.destroy(); peer = new Peer();
             
             peer.on('open', () => {
                 let conn = peer.connect(hostId);
-                
                 conn.on('open', () => {
                     isHost = false;
                     document.getElementById('menu').classList.add('hidden');
                     document.getElementById('lobby').classList.remove('hidden');
                     document.getElementById('lobby-id').innerText = hostId;
-                    document.getElementById('lobby-mode').innerText = "AGUARDANDO HOST...";
-                    
                     connections.push(conn);
                     conn.send({ type: 'join', name: myName, sprite: mySprite });
-                    btn.innerText = "ENTRAR NA SALA";
                 });
 
                 conn.on('data', data => {
-                    if(data.type === 'lobby_update') {
-                        gameState.players = data.players;
-                        maxPlayers = data.max;
-                        updateLobbyUI();
-                    }
+                    if(data.type === 'lobby_update') { gameState.players = data.players; maxPlayers = data.max; updateLobbyUI(); }
                     if(data.type === 'welcome') myPlayerId = data.id;
-                    if(data.type === 'start_game') {
-                        gameState = data.state;
-                        startActualGame();
-                    }
+                    if(data.type === 'start_game') { gameState = data.state; startActualGame(); }
                     if(data.type === 'sync') gameState = data.state;
                     if(data.type === 'shot') createParticles(data.x, data.y, data.color);
                     if(data.type === 'game_over') triggerGameOver(data.winner, data.scores);
                     if(data.type === 'restart') resetForNewRound(data.state, data.scores);
-                    if(data.type === 'error') { alert(data.msg); location.reload(); }
                 });
             });
-
-            peer.on('error', err => { alert("ID Inválido ou Sala Fechada!"); btn.innerText = "ENTRAR NA SALA"; });
         }
 
         function handleClientData(clientId, data, conn) {
             if(data.type === 'join') {
                 let currentCount = Object.keys(gameState.players).length;
-                if(currentCount >= maxPlayers) { conn.send({ type: 'error', msg: 'A sala está cheia!' }); return; }
-
-                let assignedTeam = 2;
-                if(maxPlayers === 4 && currentCount === 1) assignedTeam = 1;
-
+                if(currentCount >= maxPlayers) return;
+                let assignedTeam = (maxPlayers === 4 && currentCount === 1) ? 1 : 2;
                 initPlayerState(clientId, data.name, data.sprite, assignedTeam, false);
                 conn.send({ type: 'welcome', id: clientId, team: assignedTeam });
-                broadcastLobby();
+                updateLobbyUI(); connections.forEach(c => c.send({ type: 'lobby_update', players: gameState.players, max: maxPlayers }));
 
                 if(Object.keys(gameState.players).length === maxPlayers) {
-                    document.getElementById('lobby-status').innerText = "INICIANDO ARENA...";
-                    setTimeout(() => {
-                        connections.forEach(c => c.send({ type: 'start_game', state: gameState }));
-                        startActualGame();
-                    }, 1500);
+                    setTimeout(() => { connections.forEach(c => c.send({ type: 'start_game', state: gameState })); startActualGame(); }, 1000);
                 }
             }
             if(data.type === 'input' && gameState.players[clientId] && !gameEnded) {
-                gameState.players[clientId].y = data.y;
-                gameState.players[clientId].x = data.x;
-                if(data.shot) spawnBullet(clientId);
+                if(!gameState.players[clientId].freezeTimer > 0) {
+                    gameState.players[clientId].y = data.y;
+                    gameState.players[clientId].x = data.x;
+                    if(data.action) processAction(clientId, data.action);
+                }
             }
         }
 
         function updateLobbyUI() {
-            let count = Object.keys(gameState.players).length;
             let html = '';
             Object.values(gameState.players).forEach(p => {
-                let color = p.team === 1 ? 'var(--p1)' : 'var(--p2)';
-                html += `<div class="lobby-slot" style="color: ${color}">[${p.team === 1 ? 'VERDE' : 'ROSA'}] - ${p.name}</div>`;
+                html += `<div class="lobby-slot" style="color: ${p.team === 1 ? 'var(--p1)' : 'var(--p2)'}">[${p.team === 1 ? 'VERDE' : 'ROSA'}] - ${p.name}</div>`;
             });
             document.getElementById('lobby-players-list').innerHTML = html;
-            document.getElementById('lobby-status').innerText = `Aguardando jogadores... (${count}/${maxPlayers})`;
         }
 
-        function broadcastLobby() { updateLobbyUI(); connections.forEach(c => c.send({ type: 'lobby_update', players: gameState.players, max: maxPlayers })); }
-
-        function startActualGame() {
-            document.getElementById('lobby').classList.add('hidden');
-            document.getElementById('hud').classList.remove('hidden');
-            requestAnimationFrame(gameLoop);
-        }
-
+        function startActualGame() { document.getElementById('lobby').classList.add('hidden'); document.getElementById('hud').classList.remove('hidden'); requestAnimationFrame(gameLoop); }
         function copyId() { navigator.clipboard.writeText(document.getElementById('lobby-id').innerText); alert("ID Copiado!"); }
 
-        // --- CONTROLES E FÍSICA ---
+        // --- CONTROLES MELHORADOS (TECLADO + MOUSE) ---
         window.addEventListener('mousemove', e => {
-            if(gameEnded || !gameState.players[myPlayerId] || gameState.players[myPlayerId].hp <= 0) return;
+            if(gameEnded || !gameState.players[myPlayerId] || gameState.players[myPlayerId].hp <= 0 || gameState.players[myPlayerId].freezeTimer > 0) return;
             const rect = canvas.getBoundingClientRect();
-            let my = Math.max(0, Math.min(canvas.height - 60, e.clientY - rect.top - 30));
-            let mx = e.clientX - rect.left - 30;
-            
             let p = gameState.players[myPlayerId];
-            p.y = my;
-            p.x = p.team === 1 ? Math.max(0, Math.min(440, mx)) : Math.max(500, Math.min(canvas.width - 60, mx));
-
-            if(!isHost && connections[0]) connections[0].send({ type: 'input', x: p.x, y: p.y, shot: false });
+            p.y = Math.max(0, Math.min(canvas.height - 60, e.clientY - rect.top - 30));
+            p.x = p.team === 1 ? Math.max(0, Math.min(440, e.clientX - rect.left - 30)) : Math.max(500, Math.min(canvas.width - 60, e.clientX - rect.left - 30));
+            if(!isHost && connections[0]) connections[0].send({ type: 'input', x: p.x, y: p.y });
         });
 
-        window.addEventListener('mousedown', () => {
-            if(gameEnded || !gameState.players[myPlayerId] || gameState.players[myPlayerId].hp <= 0) return;
-            if(isHost) spawnBullet(myPlayerId);
-            else if(connections[0]) connections[0].send({ type: 'input', x: gameState.players[myPlayerId].x, y: gameState.players[myPlayerId].y, shot: true });
+        // Mouse (Tiro Normal)
+        window.addEventListener('mousedown', () => sendAction('shoot'));
+        // Teclado (R = Especial, E = Granada)
+        window.addEventListener('keydown', e => {
+            let key = e.key.toLowerCase();
+            if(key === 'r') sendAction('special');
+            if(key === 'e') sendAction('grenade');
         });
 
-        function spawnBullet(pID) {
+        function sendAction(actionType) {
+            if(gameEnded || !gameState.players[myPlayerId] || gameState.players[myPlayerId].hp <= 0 || gameState.players[myPlayerId].freezeTimer > 0) return;
+            if(isHost) processAction(myPlayerId, actionType);
+            else if(connections[0]) connections[0].send({ type: 'input', x: gameState.players[myPlayerId].x, y: gameState.players[myPlayerId].y, action: actionType });
+        }
+
+        // --- SISTEMA DE COMBATE E HABILIDADES ---
+        function processAction(pID, actionType) {
             const p = gameState.players[pID];
-            if(!p || p.hp <= 0) return;
+            if(!p || p.hp <= 0 || p.freezeTimer > 0) return;
             const side = p.team === 1 ? 1 : -1;
             const x = p.team === 1 ? p.x + 60 : p.x - 20;
-            
-            gameState.bullets.push({ owner: pID, team: p.team, x, y: p.y + 28, vx: 18 * side, vy: 0 });
-            if(p.triple > 0) {
-                gameState.bullets.push({ owner: pID, team: p.team, x, y: p.y + 28, vx: 18 * side, vy: -4 });
-                gameState.bullets.push({ owner: pID, team: p.team, x, y: p.y + 28, vx: 18 * side, vy: 4 });
-                p.triple--;
+
+            if(actionType === 'shoot') {
+                gameState.bullets.push({ owner: pID, team: p.team, type: 'normal', x, y: p.y + 28, vx: 18 * side, vy: 0 });
+                if(p.triple > 0) {
+                    gameState.bullets.push({ owner: pID, team: p.team, type: 'normal', x, y: p.y + 28, vx: 18 * side, vy: -4 });
+                    gameState.bullets.push({ owner: pID, team: p.team, type: 'normal', x, y: p.y + 28, vx: 18 * side, vy: 4 });
+                    p.triple--;
+                }
+            } 
+            else if(actionType === 'special' && p.mana >= 100) {
+                p.mana = 0; // Gasta a mana
+                gameState.bullets.push({ owner: pID, team: p.team, type: 'special', x, y: p.y + 10, vx: 22 * side, vy: 0 });
+            } 
+            else if(actionType === 'grenade' && p.grenades > 0) {
+                p.grenades--; // Gasta granada
+                gameState.bullets.push({ owner: pID, team: p.team, type: 'grenade', x, y: p.y + 15, vx: 12 * side, vy: 0 });
             }
         }
 
         function createParticles(x, y, color) {
-            for(let i=0; i<8; i++) particles.push({ x, y, vx: (Math.random()-0.5)*10, vy: (Math.random()-0.5)*10, life: 1, color });
+            for(let i=0; i<10; i++) particles.push({ x, y, vx: (Math.random()-0.5)*12, vy: (Math.random()-0.5)*12, life: 1, color });
         }
 
-        // --- SISTEMA DE PONTUAÇÃO E REINÍCIO ---
+        // --- GAME OVER E REINÍCIO ---
         function checkWinCondition() {
             if(gameEnded || !isHost) return;
-            
             let t1Alive = Object.values(gameState.players).some(p => p.team === 1 && p.hp > 0);
             let t2Alive = Object.values(gameState.players).some(p => p.team === 2 && p.hp > 0);
-
             if(!t1Alive || !t2Alive) {
                 let winner = !t1Alive ? 2 : 1;
                 if(winner === 1) scores.t1++; else scores.t2++;
-                
                 triggerGameOver(winner, scores);
                 connections.forEach(c => c.send({ type: 'game_over', winner: winner, scores: scores }));
             }
         }
 
         function triggerGameOver(winnerTeam, newScores) {
-            gameEnded = true;
-            scores = newScores;
+            gameEnded = true; scores = newScores;
             document.getElementById('score-val-1').innerText = scores.t1;
             document.getElementById('score-val-2').innerText = scores.t2;
-
-            let vicScreen = document.getElementById('victory-screen');
-            let vicTitle = document.getElementById('victory-title');
-            
+            let vicScreen = document.getElementById('victory-screen'), vicTitle = document.getElementById('victory-title');
             vicScreen.classList.remove('hidden');
-            if(winnerTeam === 1) {
-                vicTitle.innerText = "TIME VERDE VENCEU!";
-                vicTitle.style.color = "var(--p1)";
-                vicTitle.style.textShadow = "0 0 20px var(--p1)";
-            } else {
-                vicTitle.innerText = "TIME ROSA VENCEU!";
-                vicTitle.style.color = "var(--p2)";
-                vicTitle.style.textShadow = "0 0 20px var(--p2)";
-            }
-
-            if(isHost) {
-                document.getElementById('btn-restart').style.display = 'block';
-                document.getElementById('txt-wait-host').style.display = 'none';
-            } else {
-                document.getElementById('btn-restart').style.display = 'none';
-                document.getElementById('txt-wait-host').style.display = 'block';
-            }
+            vicTitle.innerText = winnerTeam === 1 ? "TIME VERDE VENCEU!" : "TIME ROSA VENCEU!";
+            vicTitle.style.color = winnerTeam === 1 ? "var(--p1)" : "var(--p2)";
+            
+            document.getElementById('btn-restart').style.display = isHost ? 'block' : 'none';
+            document.getElementById('txt-wait-host').style.display = isHost ? 'none' : 'block';
         }
 
         function restartRound() {
             if(!isHost) return;
-            // Reposiciona e cura todos
-            let t1Count = 0, t2Count = 0;
+            let t1C = 0, t2C = 0;
             Object.values(gameState.players).forEach(p => {
-                p.hp = 100; p.triple = 0;
-                if(p.team === 1) { p.x = 50; p.y = 200 + (t1Count * 150); t1Count++; }
-                else { p.x = 890; p.y = 200 + (t2Count * 150); t2Count++; }
+                p.hp = 100; p.triple = 0; p.shield = 0; p.mana = 0; p.grenades = 0; p.freezeTimer = 0;
+                if(p.team === 1) { p.x = 50; p.y = 200 + (t1C * 150); t1C++; } else { p.x = 890; p.y = 200 + (t2C * 150); t2C++; }
                 p.targetY = p.y;
             });
             gameState.bullets = []; gameState.items = [];
-            
             resetForNewRound(gameState, scores);
             connections.forEach(c => c.send({ type: 'restart', state: gameState, scores: scores }));
         }
 
         function resetForNewRound(newState, newScores) {
-            gameState = newState;
-            scores = newScores;
-            gameEnded = false;
+            gameState = newState; scores = newScores; gameEnded = false;
             document.getElementById('victory-screen').classList.add('hidden');
         }
 
-        // --- LOOP PRINCIPAL DO JOGO ---
+        // --- LOOP PRINCIPAL DO HOST ---
         function gameLoop() {
             ctx.save();
             if(screenShake > 0) { ctx.translate(Math.random()*screenShake, Math.random()*screenShake); screenShake -= 0.5; }
@@ -411,71 +367,125 @@
 
             if(isHost && !gameEnded) hostLogic();
 
-            renderGame();
-            updateHUD();
+            renderGame(); updateHUD();
             
             if(isHost && !gameEnded) checkWinCondition();
-
-            if(isHost && connections.length > 0 && !gameEnded) {
-                connections.forEach(c => c.send({ type: 'sync', state: gameState }));
-            }
+            if(isHost && connections.length > 0 && !gameEnded) connections.forEach(c => c.send({ type: 'sync', state: gameState }));
 
             ctx.restore();
             requestAnimationFrame(gameLoop);
         }
 
         function hostLogic() {
+            // IA, Mana e Congelamento
             Object.values(gameState.players).forEach(p => {
-                if(p.isAi && p.hp > 0) {
+                if(p.hp > 0) {
+                    // Regenera Mana
+                    p.mana = Math.min(100, p.mana + 0.15); // Enche ~100% em ~11 segundos (60fps)
+                    // Conta o Freeze (30 frames = 0.5s)
+                    if(p.freezeTimer > 0) p.freezeTimer--;
+                }
+
+                if(p.isAi && p.hp > 0 && p.freezeTimer <= 0) {
                     p.y += (p.targetY - p.y) * 0.05;
                     if(Math.random() < 0.03) p.targetY = Math.random() * (canvas.height - 60);
-                    if(Math.random() < 0.04) spawnBullet(p.id);
+                    if(Math.random() < 0.04) processAction(p.id, 'shoot');
+                    if(p.mana >= 100 && Math.random() < 0.02) processAction(p.id, 'special');
+                    if(p.grenades > 0 && Math.random() < 0.02) processAction(p.id, 'grenade');
                 }
             });
 
-            if(Math.random() < 0.01) gameState.items.push({ x: 300 + Math.random()*400, y: -50, type: Math.random() > 0.4 ? 'cura' : 'tiro', speed: 3 });
+            // Spawna os novos itens do céu
+            if(Math.random() < 0.012) {
+                const dropTypes = ['cura', 'tiro', 'shield', 'granada', 'freeze'];
+                const type = dropTypes[Math.floor(Math.random() * dropTypes.length)];
+                gameState.items.push({ x: 300 + Math.random()*400, y: -50, type: type, speed: 2.5 });
+            }
 
+            // Coleta de itens
             gameState.items.forEach((it, i) => {
                 it.y += it.speed;
                 Object.values(gameState.players).forEach(p => {
                     if(p.hp > 0 && it.x < p.x + 50 && it.x + 40 > p.x && it.y < p.y + 50 && it.y + 40 > p.y) {
-                        if(it.type === 'cura') p.hp = Math.min(100, p.hp + 30); else p.triple += 5;
+                        if(it.type === 'cura') p.hp = Math.min(100, p.hp + 30);
+                        else if(it.type === 'tiro') p.triple += 5;
+                        else if(it.type === 'shield') p.shield = 3; // Aguenta 3 hits
+                        else if(it.type === 'granada') p.grenades += 1;
+                        else if(it.type === 'freeze') {
+                            // Congela inimigos
+                            Object.values(gameState.players).forEach(enemy => {
+                                if(enemy.team !== p.team && enemy.hp > 0) enemy.freezeTimer = 30; // 0.5s = 30 frames a 60fps
+                            });
+                            screenShake = 5;
+                        }
                         gameState.items.splice(i, 1);
                     }
                 });
             });
 
+            // Lógica e Colisão das Balas/Especiais
             for(let i = gameState.bullets.length - 1; i >= 0; i--) {
                 let b = gameState.bullets[i];
                 b.x += b.vx; b.y += b.vy;
                 
                 let hit = false;
                 Object.values(gameState.players).forEach(p => {
-                    if(p.hp > 0 && b.team !== p.team && b.x > p.x && b.x < p.x+60 && b.y > p.y && b.y < p.y+60) {
-                        p.hp -= 5;
+                    let w = b.type === 'normal' ? 20 : 40; // hitbox maior para especiais
+                    if(p.hp > 0 && b.team !== p.team && b.x + w > p.x && b.x < p.x+60 && b.y + w > p.y && b.y < p.y+60) {
+                        hit = true;
+                        
+                        // Dano base dependendo do tipo de projétil
+                        let damage = 5;
+                        if(b.type === 'special') damage = 25;
+                        if(b.type === 'grenade') damage = 15;
+
+                        // Lógica do Escudo Azul
+                        if(p.shield > 0) {
+                            if(b.type === 'normal') {
+                                p.shield--; // Absorve hit fraco
+                                damage = 0; 
+                            } else {
+                                p.shield = 0; // Hit forte quebra o escudo instantaneamente
+                                damage -= 5; // Absorve um pouquinho do dano forte
+                            }
+                        }
+
+                        p.hp -= damage;
                         let color = b.team === 1 ? '#00ff41' : '#ff00ff';
+                        if(b.type === 'special') color = '#0088ff'; // Partícula azul pro especial
                         createParticles(b.x, b.y, color);
-                        screenShake = 3; hit = true;
+                        screenShake = b.type === 'normal' ? 3 : 8; // Tremer tela mais forte se for especial
                         connections.forEach(c => c.send({ type: 'shot', x: b.x, y: b.y, color }));
                     }
                 });
 
-                if(hit || b.x < -50 || b.x > canvas.width + 50) gameState.bullets.splice(i, 1);
+                if(hit || b.x < -100 || b.x > canvas.width + 100) gameState.bullets.splice(i, 1);
             }
         }
 
         function renderGame() {
+            // Render Itens caindo
             gameState.items.forEach(it => {
-                ctx.shadowBlur = 15; ctx.shadowColor = it.type === 'cura' ? '#0f0' : '#ff0';
-                if(imgs[it.type].complete) ctx.drawImage(imgs[it.type], it.x, it.y, 40, 40);
+                ctx.shadowBlur = 15; ctx.shadowColor = '#fff';
+                if(imgs[it.type] && imgs[it.type].complete) ctx.drawImage(imgs[it.type], it.x, it.y, 40, 40);
             });
 
+            // Render Tiros/Projéteis
             gameState.bullets.forEach(b => {
-                let color = b.team === 1 ? '#00ff41' : '#ff00ff';
-                ctx.shadowBlur = 10; ctx.shadowColor = color; ctx.fillStyle = color;
-                ctx.fillRect(b.x, b.y, 20, 4);
+                if(b.type === 'normal') {
+                    let color = b.team === 1 ? '#00ff41' : '#ff00ff';
+                    ctx.shadowBlur = 10; ctx.shadowColor = color; ctx.fillStyle = color;
+                    ctx.fillRect(b.x, b.y, 20, 4);
+                } else if(b.type === 'special' && imgs.especial.complete) {
+                    ctx.shadowBlur = 20; ctx.shadowColor = '#0088ff';
+                    ctx.drawImage(imgs.especial, b.x, b.y, 40, 40);
+                } else if(b.type === 'grenade' && imgs.granada.complete) {
+                    ctx.shadowBlur = 10; ctx.shadowColor = '#ff5500';
+                    ctx.drawImage(imgs.granada, b.x, b.y, 30, 30);
+                }
             });
 
+            // Partículas
             particles.forEach((p, i) => {
                 p.x += p.vx; p.y += p.vy; p.life -= 0.05;
                 ctx.fillStyle = p.color; ctx.globalAlpha = Math.max(0, p.life);
@@ -484,30 +494,50 @@
             });
             ctx.globalAlpha = 1;
 
+            // Render Players
             Object.values(gameState.players).forEach(p => {
-                if(p.hp <= 0) { ctx.globalAlpha = 0.3; } // Fantasma se estiver morto
-                ctx.shadowBlur = p.team === 1 ? 20 : 15; 
-                ctx.shadowColor = p.team === 1 ? 'rgba(0, 255, 65, 0.4)' : 'rgba(255, 0, 255, 0.4)';
+                if(p.hp <= 0) { ctx.globalAlpha = 0.3; }
                 
-                if(imgs[p.sprite] && imgs[p.sprite].complete) {
-                    ctx.drawImage(imgs[p.sprite], p.x, p.y, 60, 60);
+                // Se estiver congelado, aplica filtro azulado
+                if(p.freezeTimer > 0) { ctx.shadowBlur = 30; ctx.shadowColor = '#00ffff'; }
+                else { ctx.shadowBlur = p.team === 1 ? 20 : 15; ctx.shadowColor = p.team === 1 ? 'rgba(0, 255, 65, 0.4)' : 'rgba(255, 0, 255, 0.4)'; }
+                
+                if(imgs[p.sprite] && imgs[p.sprite].complete) ctx.drawImage(imgs[p.sprite], p.x, p.y, 60, 60);
+
+                // Desenha o Escudo Azul Visual
+                if(p.shield > 0) {
+                    ctx.beginPath();
+                    ctx.arc(p.x + 30, p.y + 30, 40, 0, Math.PI * 2);
+                    ctx.strokeStyle = `rgba(0, 255, 255, ${0.4 + (p.shield * 0.2)})`; // Fica mais forte com mais cargas
+                    ctx.lineWidth = p.shield;
+                    ctx.stroke();
                 }
 
                 ctx.shadowBlur = 0; ctx.globalAlpha = 1;
-                ctx.fillStyle = 'white'; ctx.font = '12px Orbitron'; ctx.textAlign = 'center';
-                ctx.fillText(p.name, p.x + 30, p.y - 10);
+                ctx.fillStyle = 'white'; ctx.font = '10px Orbitron'; ctx.textAlign = 'center';
+                
+                // Exibe se tá congelado
+                if(p.freezeTimer > 0) ctx.fillText("CONGELADO", p.x + 30, p.y - 15);
+                else ctx.fillText(p.name, p.x + 30, p.y - 10);
             });
         }
 
+        // --- ATUALIZAÇÃO DO HUD DINÂMICO ---
         function updateHUD() {
             let t1HTML = '', t2HTML = '';
             Object.values(gameState.players).forEach(p => {
                 let color = p.team === 1 ? 'var(--p1)' : 'var(--p2)';
                 let hpShow = Math.max(0, p.hp);
+                let manaShow = Math.floor(p.mana);
+                
                 let html = `
                     <div style="${hpShow === 0 ? 'opacity: 0.5;' : ''}">
-                        <div class="hp-label"><span>${p.name}</span> <span>${hpShow}%</span></div>
+                        <div class="hp-label">
+                            <span>${p.name} <span style="color:#ff0;">${p.grenades > 0 ? `[G:${p.grenades}]` : ''}</span></span> 
+                            <span>${hpShow}%</span>
+                        </div>
                         <div class="hp-bar"><div class="hp-fill" style="width: ${hpShow}%; background: ${color}; box-shadow: 0 0 10px ${color};"></div></div>
+                        <div class="mana-bar"><div class="mana-fill" style="width: ${manaShow}%;"></div></div>
                     </div>`;
                 if(p.team === 1) t1HTML += html; else t2HTML += html;
             });
