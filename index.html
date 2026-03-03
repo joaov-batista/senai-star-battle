@@ -34,8 +34,6 @@
         .mana-bar { width: 100%; height: 4px; background: #111; position: relative; border-radius: 2px; overflow: hidden; }
         .mana-fill { height: 100%; width: 0%; background: var(--mana); transition: width 0.2s; box-shadow: 0 0 5px var(--mana); }
         
-        .status-icons { font-size: 0.8rem; color: #ccc; display: flex; gap: 10px; }
-
         #scoreboard { background: rgba(0,0,0,0.8); border: 2px solid var(--gold); padding: 5px 20px; border-radius: 10px; text-align: center; margin-top: -10px; box-shadow: 0 0 20px rgba(255, 204, 0, 0.2); }
         .score-text { font-size: 1.8rem; font-weight: bold; color: white; display: flex; gap: 20px; align-items: center;}
         .score-t1 { color: var(--p1); text-shadow: 0 0 10px var(--p1); }
@@ -120,7 +118,6 @@
         const canvas = document.getElementById('game');
         const ctx = canvas.getContext('2d');
         
-        // Carregamento de todos os assets novos
         const imgs = { 
             p1: new Image(), p2: new Image(), p3: new Image(), p4: new Image(), 
             p5: new Image(), p6: new Image(), p7: new Image(),
@@ -135,9 +132,10 @@
 
         let mySprite = 'p1', myName = 'ALUNO';
         let peer, connections = [], isHost = false, myPlayerId = 'p_0'; 
-        let gridOffset = 0, screenShake = 0, particles = [], maxPlayers = 1;
+        let gridOffset = 0, screenShake = 0, particles = [], maxPlayers = 1, clientCounter = 1;
 
-        let gameState = { players: {}, items: [], bullets: [] };
+        // Adicionado: explosões
+        let gameState = { players: {}, items: [], bullets: [], explosions: [] };
         let scores = { t1: 0, t2: 0 }, gameEnded = false;
 
         function selectChar(charId) {
@@ -146,7 +144,6 @@
             document.getElementById('sel-' + charId).classList.add('active');
         }
 
-        // Novo Status de Player (Adicionado Mana, Shield, Granadas e Freeze)
         function initPlayerState(id, name, sprite, team, isAi = false) {
             let teamArr = Object.values(gameState.players).filter(p => p.team === team);
             let idx = teamArr.length;
@@ -172,7 +169,7 @@
                 initPlayerState('bot_senai', 'IA SENAI', 'p2', 2, true);
                 requestAnimationFrame(gameLoop);
             } else {
-                isHost = true; maxPlayers = mode === 'host1v1' ? 2 : 4;
+                isHost = true; maxPlayers = mode === 'host1v1' ? 2 : 4; clientCounter = 1;
                 document.getElementById('lobby').classList.remove('hidden');
                 document.getElementById('lobby-mode').innerText = mode === 'host1v1' ? 'COMBATE 1 VS 1' : 'COMBATE 2 VS 2';
                 
@@ -185,8 +182,10 @@
                 updateLobbyUI();
 
                 peer.on('connection', conn => {
+                    // FIX MULTIPLAYER: ID único para cada um gerado independente da closure
+                    let clientId = 'client_' + clientCounter++;
                     connections.push(conn);
-                    conn.on('data', data => handleClientData('client_' + connections.length, data, conn));
+                    conn.on('data', data => handleClientData(clientId, data, conn));
                 });
             }
         }
@@ -213,10 +212,9 @@
 
                 conn.on('data', data => {
                     if(data.type === 'lobby_update') { gameState.players = data.players; maxPlayers = data.max; updateLobbyUI(); }
-                    if(data.type === 'welcome') myPlayerId = data.id;
+                    if(data.type === 'welcome') myPlayerId = data.id; // Recebe sua credencial oficial
                     if(data.type === 'start_game') { gameState = data.state; startActualGame(); }
                     if(data.type === 'sync') gameState = data.state;
-                    if(data.type === 'shot') createParticles(data.x, data.y, data.color);
                     if(data.type === 'game_over') triggerGameOver(data.winner, data.scores);
                     if(data.type === 'restart') resetForNewRound(data.state, data.scores);
                 });
@@ -227,20 +225,28 @@
             if(data.type === 'join') {
                 let currentCount = Object.keys(gameState.players).length;
                 if(currentCount >= maxPlayers) return;
-                let assignedTeam = (maxPlayers === 4 && currentCount === 1) ? 1 : 2;
+                
+                // Balanço de times inteligente (Fix 2v2)
+                let t1Count = Object.values(gameState.players).filter(p => p.team === 1).length;
+                let t2Count = Object.values(gameState.players).filter(p => p.team === 2).length;
+                let assignedTeam = (t1Count <= t2Count) ? 1 : 2;
+
                 initPlayerState(clientId, data.name, data.sprite, assignedTeam, false);
                 conn.send({ type: 'welcome', id: clientId, team: assignedTeam });
-                updateLobbyUI(); connections.forEach(c => c.send({ type: 'lobby_update', players: gameState.players, max: maxPlayers }));
+                updateLobbyUI(); 
+                connections.forEach(c => c.send({ type: 'lobby_update', players: gameState.players, max: maxPlayers }));
 
                 if(Object.keys(gameState.players).length === maxPlayers) {
-                    setTimeout(() => { connections.forEach(c => c.send({ type: 'start_game', state: gameState })); startActualGame(); }, 1000);
+                    document.getElementById('lobby-status').innerText = "TODOS CONECTADOS! INICIANDO...";
+                    setTimeout(() => { connections.forEach(c => c.send({ type: 'start_game', state: gameState })); startActualGame(); }, 1500);
                 }
             }
-            if(data.type === 'input' && gameState.players[clientId] && !gameEnded) {
-                if(!gameState.players[clientId].freezeTimer > 0) {
-                    gameState.players[clientId].y = data.y;
-                    gameState.players[clientId].x = data.x;
-                    if(data.action) processAction(clientId, data.action);
+            // FIX MULTIPLAYER: Lê quem enviou de fato o pacote (data.id) e não o clientId preso da closure
+            if(data.type === 'input' && data.id && gameState.players[data.id] && !gameEnded) {
+                if(gameState.players[data.id].freezeTimer <= 0) {
+                    gameState.players[data.id].y = data.y;
+                    gameState.players[data.id].x = data.x;
+                    if(data.action) processAction(data.id, data.action);
                 }
             }
         }
@@ -256,19 +262,18 @@
         function startActualGame() { document.getElementById('lobby').classList.add('hidden'); document.getElementById('hud').classList.remove('hidden'); requestAnimationFrame(gameLoop); }
         function copyId() { navigator.clipboard.writeText(document.getElementById('lobby-id').innerText); alert("ID Copiado!"); }
 
-        // --- CONTROLES MELHORADOS (TECLADO + MOUSE) ---
         window.addEventListener('mousemove', e => {
             if(gameEnded || !gameState.players[myPlayerId] || gameState.players[myPlayerId].hp <= 0 || gameState.players[myPlayerId].freezeTimer > 0) return;
             const rect = canvas.getBoundingClientRect();
             let p = gameState.players[myPlayerId];
             p.y = Math.max(0, Math.min(canvas.height - 60, e.clientY - rect.top - 30));
             p.x = p.team === 1 ? Math.max(0, Math.min(440, e.clientX - rect.left - 30)) : Math.max(500, Math.min(canvas.width - 60, e.clientX - rect.left - 30));
-            if(!isHost && connections[0]) connections[0].send({ type: 'input', x: p.x, y: p.y });
+            
+            // Envia seu ID cravado
+            if(!isHost && connections[0]) connections[0].send({ type: 'input', id: myPlayerId, x: p.x, y: p.y });
         });
 
-        // Mouse (Tiro Normal)
         window.addEventListener('mousedown', () => sendAction('shoot'));
-        // Teclado (R = Especial, E = Granada)
         window.addEventListener('keydown', e => {
             let key = e.key.toLowerCase();
             if(key === 'r') sendAction('special');
@@ -278,10 +283,9 @@
         function sendAction(actionType) {
             if(gameEnded || !gameState.players[myPlayerId] || gameState.players[myPlayerId].hp <= 0 || gameState.players[myPlayerId].freezeTimer > 0) return;
             if(isHost) processAction(myPlayerId, actionType);
-            else if(connections[0]) connections[0].send({ type: 'input', x: gameState.players[myPlayerId].x, y: gameState.players[myPlayerId].y, action: actionType });
+            else if(connections[0]) connections[0].send({ type: 'input', id: myPlayerId, x: gameState.players[myPlayerId].x, y: gameState.players[myPlayerId].y, action: actionType });
         }
 
-        // --- SISTEMA DE COMBATE E HABILIDADES ---
         function processAction(pID, actionType) {
             const p = gameState.players[pID];
             if(!p || p.hp <= 0 || p.freezeTimer > 0) return;
@@ -297,11 +301,11 @@
                 }
             } 
             else if(actionType === 'special' && p.mana >= 100) {
-                p.mana = 0; // Gasta a mana
+                p.mana = 0; 
                 gameState.bullets.push({ owner: pID, team: p.team, type: 'special', x, y: p.y + 10, vx: 22 * side, vy: 0 });
             } 
             else if(actionType === 'grenade' && p.grenades > 0) {
-                p.grenades--; // Gasta granada
+                p.grenades--; 
                 gameState.bullets.push({ owner: pID, team: p.team, type: 'grenade', x, y: p.y + 15, vx: 12 * side, vy: 0 });
             }
         }
@@ -310,7 +314,6 @@
             for(let i=0; i<10; i++) particles.push({ x, y, vx: (Math.random()-0.5)*12, vy: (Math.random()-0.5)*12, life: 1, color });
         }
 
-        // --- GAME OVER E REINÍCIO ---
         function checkWinCondition() {
             if(gameEnded || !isHost) return;
             let t1Alive = Object.values(gameState.players).some(p => p.team === 1 && p.hp > 0);
@@ -344,7 +347,7 @@
                 if(p.team === 1) { p.x = 50; p.y = 200 + (t1C * 150); t1C++; } else { p.x = 890; p.y = 200 + (t2C * 150); t2C++; }
                 p.targetY = p.y;
             });
-            gameState.bullets = []; gameState.items = [];
+            gameState.bullets = []; gameState.items = []; gameState.explosions = [];
             resetForNewRound(gameState, scores);
             connections.forEach(c => c.send({ type: 'restart', state: gameState, scores: scores }));
         }
@@ -354,7 +357,6 @@
             document.getElementById('victory-screen').classList.add('hidden');
         }
 
-        // --- LOOP PRINCIPAL DO HOST ---
         function gameLoop() {
             ctx.save();
             if(screenShake > 0) { ctx.translate(Math.random()*screenShake, Math.random()*screenShake); screenShake -= 0.5; }
@@ -377,12 +379,10 @@
         }
 
         function hostLogic() {
-            // IA, Mana e Congelamento
+            // IA e Animações Contínuas
             Object.values(gameState.players).forEach(p => {
                 if(p.hp > 0) {
-                    // Regenera Mana
-                    p.mana = Math.min(100, p.mana + 0.15); // Enche ~100% em ~11 segundos (60fps)
-                    // Conta o Freeze (30 frames = 0.5s)
+                    p.mana = Math.min(100, p.mana + 0.15); 
                     if(p.freezeTimer > 0) p.freezeTimer--;
                 }
 
@@ -395,26 +395,32 @@
                 }
             });
 
-            // Spawna os novos itens do céu
+            // Atualização do Tempo de Vida das Explosões
+            for(let i = gameState.explosions.length - 1; i >= 0; i--) {
+                gameState.explosions[i].life -= 0.05; // Ficam na tela um pouco
+                if(gameState.explosions[i].life <= 0) gameState.explosions.splice(i, 1);
+            }
+
+            // Spawna Itens
             if(Math.random() < 0.012) {
                 const dropTypes = ['cura', 'tiro', 'shield', 'granada', 'freeze'];
                 const type = dropTypes[Math.floor(Math.random() * dropTypes.length)];
                 gameState.items.push({ x: 300 + Math.random()*400, y: -50, type: type, speed: 2.5 });
             }
 
-            // Coleta de itens
+            // Coleta de Itens
             gameState.items.forEach((it, i) => {
                 it.y += it.speed;
                 Object.values(gameState.players).forEach(p => {
                     if(p.hp > 0 && it.x < p.x + 50 && it.x + 40 > p.x && it.y < p.y + 50 && it.y + 40 > p.y) {
                         if(it.type === 'cura') p.hp = Math.min(100, p.hp + 30);
                         else if(it.type === 'tiro') p.triple += 5;
-                        else if(it.type === 'shield') p.shield = 3; // Aguenta 3 hits
+                        else if(it.type === 'shield') p.shield = 3; 
                         else if(it.type === 'granada') p.grenades += 1;
                         else if(it.type === 'freeze') {
-                            // Congela inimigos
+                            // CONGELAMENTO ATUALIZADO (1 Segundo = 60 frames a 60FPS)
                             Object.values(gameState.players).forEach(enemy => {
-                                if(enemy.team !== p.team && enemy.hp > 0) enemy.freezeTimer = 30; // 0.5s = 30 frames a 60fps
+                                if(enemy.team !== p.team && enemy.hp > 0) enemy.freezeTimer = 60; 
                             });
                             screenShake = 5;
                         }
@@ -423,54 +429,83 @@
                 });
             });
 
-            // Lógica e Colisão das Balas/Especiais
+            // Tiros e Explosões (AoE)
             for(let i = gameState.bullets.length - 1; i >= 0; i--) {
                 let b = gameState.bullets[i];
                 b.x += b.vx; b.y += b.vy;
                 
-                let hit = false;
+                let hitPlayer = null;
+                let w = b.type === 'normal' ? 20 : 40; 
+                
+                // Checa colisão com corpo
                 Object.values(gameState.players).forEach(p => {
-                    let w = b.type === 'normal' ? 20 : 40; // hitbox maior para especiais
                     if(p.hp > 0 && b.team !== p.team && b.x + w > p.x && b.x < p.x+60 && b.y + w > p.y && b.y < p.y+60) {
-                        hit = true;
-                        
-                        // Dano base dependendo do tipo de projétil
-                        let damage = 5;
-                        if(b.type === 'special') damage = 25;
-                        if(b.type === 'grenade') damage = 15;
-
-                        // Lógica do Escudo Azul
-                        if(p.shield > 0) {
-                            if(b.type === 'normal') {
-                                p.shield--; // Absorve hit fraco
-                                damage = 0; 
-                            } else {
-                                p.shield = 0; // Hit forte quebra o escudo instantaneamente
-                                damage -= 5; // Absorve um pouquinho do dano forte
-                            }
-                        }
-
-                        p.hp -= damage;
-                        let color = b.team === 1 ? '#00ff41' : '#ff00ff';
-                        if(b.type === 'special') color = '#0088ff'; // Partícula azul pro especial
-                        createParticles(b.x, b.y, color);
-                        screenShake = b.type === 'normal' ? 3 : 8; // Tremer tela mais forte se for especial
-                        connections.forEach(c => c.send({ type: 'shot', x: b.x, y: b.y, color }));
+                        hitPlayer = p;
                     }
                 });
 
-                if(hit || b.x < -100 || b.x > canvas.width + 100) gameState.bullets.splice(i, 1);
+                // Se bateu em alguém ou saiu da tela, engatilha dano/explosão
+                if(hitPlayer || b.x < -50 || b.x > canvas.width + 50) {
+                    let hitX = b.x + w/2; // Centro de onde bateu
+                    let hitY = b.y + w/2;
+
+                    // GRANADA E ESPECIAL -> EXPLOSÃO EM ÁREA (AoE)
+                    if (b.type === 'grenade' || b.type === 'special') {
+                        let isSpecial = b.type === 'special';
+                        let radius = isSpecial ? 220 : 120; // 220 pro Especial (Peixe), 120 pra granada
+                        let dmg = isSpecial ? 40 : 20;
+                        let color = isSpecial ? 'rgba(0, 136, 255, 0.7)' : 'rgba(255, 85, 0, 0.7)';
+
+                        // Registra o círculo visual
+                        gameState.explosions.push({x: hitX, y: hitY, radius: radius, color: color, life: 1});
+                        screenShake = isSpecial ? 15 : 8;
+
+                        // Aplica o Dano Em Área
+                        Object.values(gameState.players).forEach(p => {
+                            if (p.hp > 0 && p.team !== b.team) {
+                                let dist = Math.hypot((p.x+30) - hitX, (p.y+30) - hitY);
+                                if (dist <= radius) { // Se estiver dentro do círculo, toma pipoco
+                                    let finalDmg = dmg;
+                                    if (p.shield > 0) {
+                                        p.shield = 0; // Quebra o escudo no ato
+                                        finalDmg = Math.max(0, finalDmg - 15); // Escudo tanka 15 da explosão
+                                    }
+                                    p.hp -= finalDmg;
+                                }
+                            }
+                        });
+                    } 
+                    // TIRO NORMAL -> DANO ÚNICO DIRETO
+                    else if (hitPlayer && b.type === 'normal') {
+                        if(hitPlayer.shield > 0) { hitPlayer.shield--; } 
+                        else { hitPlayer.hp -= 5; }
+                        createParticles(hitX, hitY, b.team === 1 ? '#00ff41' : '#ff00ff');
+                        screenShake = 3;
+                    }
+                    
+                    gameState.bullets.splice(i, 1);
+                }
             }
         }
 
         function renderGame() {
-            // Render Itens caindo
+            // Render Círculos de Explosão
+            gameState.explosions.forEach(exp => {
+                ctx.beginPath();
+                // Efeito que faz o círculo expandir um pouco enquanto some
+                let currentRadius = exp.radius * (1.2 - exp.life);
+                ctx.arc(exp.x, exp.y, currentRadius, 0, Math.PI * 2);
+                ctx.fillStyle = exp.color;
+                ctx.globalAlpha = exp.life; // Fica transparente antes de sumir
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            });
+
             gameState.items.forEach(it => {
                 ctx.shadowBlur = 15; ctx.shadowColor = '#fff';
                 if(imgs[it.type] && imgs[it.type].complete) ctx.drawImage(imgs[it.type], it.x, it.y, 40, 40);
             });
 
-            // Render Tiros/Projéteis
             gameState.bullets.forEach(b => {
                 if(b.type === 'normal') {
                     let color = b.team === 1 ? '#00ff41' : '#ff00ff';
@@ -485,7 +520,6 @@
                 }
             });
 
-            // Partículas
             particles.forEach((p, i) => {
                 p.x += p.vx; p.y += p.vy; p.life -= 0.05;
                 ctx.fillStyle = p.color; ctx.globalAlpha = Math.max(0, p.life);
@@ -494,21 +528,18 @@
             });
             ctx.globalAlpha = 1;
 
-            // Render Players
             Object.values(gameState.players).forEach(p => {
                 if(p.hp <= 0) { ctx.globalAlpha = 0.3; }
                 
-                // Se estiver congelado, aplica filtro azulado
                 if(p.freezeTimer > 0) { ctx.shadowBlur = 30; ctx.shadowColor = '#00ffff'; }
                 else { ctx.shadowBlur = p.team === 1 ? 20 : 15; ctx.shadowColor = p.team === 1 ? 'rgba(0, 255, 65, 0.4)' : 'rgba(255, 0, 255, 0.4)'; }
                 
                 if(imgs[p.sprite] && imgs[p.sprite].complete) ctx.drawImage(imgs[p.sprite], p.x, p.y, 60, 60);
 
-                // Desenha o Escudo Azul Visual
                 if(p.shield > 0) {
                     ctx.beginPath();
                     ctx.arc(p.x + 30, p.y + 30, 40, 0, Math.PI * 2);
-                    ctx.strokeStyle = `rgba(0, 255, 255, ${0.4 + (p.shield * 0.2)})`; // Fica mais forte com mais cargas
+                    ctx.strokeStyle = `rgba(0, 255, 255, ${0.4 + (p.shield * 0.2)})`;
                     ctx.lineWidth = p.shield;
                     ctx.stroke();
                 }
@@ -516,13 +547,11 @@
                 ctx.shadowBlur = 0; ctx.globalAlpha = 1;
                 ctx.fillStyle = 'white'; ctx.font = '10px Orbitron'; ctx.textAlign = 'center';
                 
-                // Exibe se tá congelado
                 if(p.freezeTimer > 0) ctx.fillText("CONGELADO", p.x + 30, p.y - 15);
                 else ctx.fillText(p.name, p.x + 30, p.y - 10);
             });
         }
 
-        // --- ATUALIZAÇÃO DO HUD DINÂMICO ---
         function updateHUD() {
             let t1HTML = '', t2HTML = '';
             Object.values(gameState.players).forEach(p => {
