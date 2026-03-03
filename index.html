@@ -14,7 +14,7 @@
         .menu-card { background: rgba(0, 0, 0, 0.8); padding: 30px; border-radius: 20px; border: 1px solid var(--neon); backdrop-filter: blur(15px); text-align: center; box-shadow: 0 0 50px rgba(0, 255, 204, 0.15); width: 450px; }
         h1 { font-size: 3rem; text-shadow: 0 0 20px var(--neon); color: var(--neon); margin: 0 0 10px 0; font-style: italic; }
         
-        input[type="text"] { width: 90%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid var(--neon); color: white; font-size: 1.2rem; text-align: center; margin-bottom: 20px; outline: none; }
+        input[type="text"] { width: 90%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid var(--neon); color: white; font-size: 1.2rem; text-align: center; margin-bottom: 20px; outline: none; font-weight: bold; letter-spacing: 2px;}
         
         .char-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px; }
         .char-select { width: 50px; height: 50px; border: 2px solid #555; cursor: pointer; border-radius: 10px; transition: 0.3s; background-size: cover; background-position: center; }
@@ -47,11 +47,11 @@
         #victory-title { font-size: 4rem; margin-bottom: 20px; text-transform: uppercase; font-style: italic; }
 
         /* Menu de Controles (TAB) */
-        #controls-overlay { position: absolute; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 200; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(10px); color: white; }
+        #controls-overlay { position: absolute; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 200; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(10px); color: white; }
         .controls-box { border: 2px solid var(--neon); padding: 30px; border-radius: 15px; background: rgba(0, 255, 204, 0.05); max-width: 800px; width: 80%; }
-        .controls-list { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: left; margin-top: 20px; }
+        .controls-list { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: left; margin-top: 20px; font-size: 0.9rem;}
         .controls-list div { padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; border-left: 3px solid var(--gold); }
-        .item-title { color: var(--gold); font-weight: bold; margin-bottom: 5px; font-size: 1.1rem; }
+        .item-title { color: var(--gold); font-weight: bold; margin-bottom: 5px; font-size: 1.05rem; }
     </style>
 </head>
 <body>
@@ -62,7 +62,7 @@
             
             <input type="text" id="player-name" placeholder="DIGITE SEU NOME" maxlength="10">
             
-            <p style="margin: 5px 0; color: #aaa; font-size: 0.9rem;">SELECIONE SUA UNIDADE (1 AO 7)</p>
+            <p style="margin: 5px 0; color: #aaa; font-size: 0.9rem;">SELECIONE SUA UNIDADE</p>
             <div class="char-grid">
                 <div class="char-select active" id="sel-p1" style="background-image: url('player1.png');" onclick="selectChar('p1')"></div>
                 <div class="char-select" id="sel-p2" style="background-image: url('player2.png');" onclick="selectChar('p2')"></div>
@@ -80,7 +80,7 @@
             </div>
             
             <div style="margin-top: 10px; border-top: 1px solid #333; padding-top: 15px;">
-                <input type="text" id="join-id" placeholder="COLAR ID DO AMIGO" style="margin-bottom: 10px; font-size: 0.9rem;">
+                <input type="text" id="join-id" placeholder="CÓDIGO DE 6 DÍGITOS" style="margin-bottom: 10px; font-size: 0.9rem; text-align: center;">
                 <button id="btn-join" onclick="joinGame()" class="btn-full" style="border-color: var(--p2); color: var(--p2);">ENTRAR NA SALA</button>
             </div>
         </div>
@@ -90,17 +90,19 @@
         <div class="controls-box">
             <h2 style="color: var(--neon); text-align: center; margin-top: 0;">MANUAL DA ARENA</h2>
             <div style="text-align: center; font-size: 1.1rem; margin-bottom: 20px;">
-                <b>MOUSE:</b> Move a unidade (Cima/Baixo) | <b>CLIQUE ESQUERDO:</b> Tiro Normal<br>
+                <b>MOUSE:</b> Move a unidade | <b>CLIQUE ESQUERDO:</b> Tiro Normal<br>
                 <b>TECLA E:</b> Lança Granada | <b>TECLA R:</b> Usa o Especial (Peixe)
             </div>
             <div class="controls-list">
-                <div><div class="item-title">🔋 Cura / Tiro (cura.png / tiro.png)</div>Cura recupera 30% do HP. Tiro concede tiros triplos temporários.</div>
-                <div><div class="item-title">🛡️ Escudo (shield.png)</div>Gera uma bolha que anula até 3 tiros fracos ou absorve dano de explosões.</div>
-                <div><div class="item-title">💣 Granada (granada.png)</div>Aperte E para lançar. Explode em área ao chegar perto do inimigo.</div>
-                <div><div class="item-title">🐟 Especial (especial.png)</div>Aperte R (requer Mana 100%). Lança uma bomba colossal que detona em área.</div>
-                <div><div class="item-title">❄️ Freeze (freeze.png)</div>Ao pegar, congela todo o time inimigo por exatos 1 segundo.</div>
-                <div><div class="item-title">⚡ Raio (raio.png)</div>Ao pegar, um raio gigante cai do céu em cima de todos os inimigos vivos (15 de Dano).</div>
-                <div><div class="item-title">🍒 Cereja (cereja.png)</div>Transforma seus próximos 3 tiros. Se chegarem no lado inimigo sem bater, se fragmentam em 3!</div>
+                <div><div class="item-title">🔋 Cura / Tiro</div>Cura 100 de HP. Tiro triplica sua arma.</div>
+                <div><div class="item-title">🛡️ Escudo (shield.png)</div>Anula até 3 tiros fracos ou tanka metade de uma explosão.</div>
+                <div><div class="item-title">💣 Granada (granada.png)</div>Aperte E. Explode no ar ao entrar na base inimiga!</div>
+                <div><div class="item-title">🐟 Especial (especial.png)</div>Aperte R com Mana em 100%. Super detonação em área.</div>
+                <div><div class="item-title">❄️ Freeze (freeze.png)</div>Congela todo o time inimigo por exatos 1 segundo.</div>
+                <div><div class="item-title">⚡ Raio (raio.png)</div>Dano global. Um raio cai na cabeça de todos os inimigos vivos.</div>
+                <div><div class="item-title">🍒 Cereja (cereja.png)</div>3 Tiros Gigantes. Se chegarem no lado inimigo, estilhaçam em 5!</div>
+                <div><div class="item-title">⚡ Energy (energy.png)</div>Dobra sua velocidade de movimento por 5 segundos.</div>
+                <div><div class="item-title">✝️ Cruz (cross.png)</div>ITEM RARO! 3 Pilares divinos devastam partes da arena inimiga.</div>
             </div>
         </div>
     </div>
@@ -110,9 +112,9 @@
             <h1 style="font-size: 2.5rem;">SALA DE ESPERA</h1>
             <h2 id="lobby-mode" style="color: #aaa; margin-top: 0;">...</h2>
             
-            <div style="background: rgba(255,0,255,0.1); border: 1px solid var(--p2); padding: 10px; border-radius: 5px;">
-                <p style="margin: 0; color: #ccc;">ID DA SALA PARA CONVITE:</p>
-                <b id="lobby-id" style="color: var(--p2); font-size: 1.5rem; cursor:pointer;" onclick="copyId()">GERANDO...</b>
+            <div style="background: rgba(255,0,255,0.1); border: 1px solid var(--p2); padding: 15px; border-radius: 5px; margin: 15px 0;">
+                <p style="margin: 0; color: #ccc;">PASSE ESTE CÓDIGO AO AMIGO:</p>
+                <b id="lobby-id" style="color: var(--p2); font-size: 2.5rem; letter-spacing: 5px; cursor:pointer;" onclick="copyId()">------</b>
             </div>
 
             <div id="lobby-players-list"></div>
@@ -146,18 +148,15 @@
         const ctx = canvas.getContext('2d');
         
         const imgs = { 
-            p1: new Image(), p2: new Image(), p3: new Image(), p4: new Image(), 
-            p5: new Image(), p6: new Image(), p7: new Image(),
-            cura: new Image(), tiro: new Image(), 
-            shield: new Image(), especial: new Image(), granada: new Image(), 
-            freeze: new Image(), raio: new Image(), cereja: new Image()
+            p1: new Image(), p2: new Image(), p3: new Image(), p4: new Image(), p5: new Image(), p6: new Image(), p7: new Image(),
+            cura: new Image(), tiro: new Image(), shield: new Image(), especial: new Image(), granada: new Image(), 
+            freeze: new Image(), raio: new Image(), cereja: new Image(), energy: new Image(), cross: new Image(), metralhadora: new Image()
         };
         imgs.p1.src = 'player1.png'; imgs.p2.src = 'player2.png'; imgs.p3.src = 'player3.png'; imgs.p4.src = 'player4.png';
         imgs.p5.src = 'player5.png'; imgs.p6.src = 'player6.png'; imgs.p7.src = 'player7.png';
-        imgs.cura.src = 'cura.png'; imgs.tiro.src = 'tiro.png';
-        imgs.shield.src = 'shield.png'; imgs.especial.src = 'especial.png'; 
-        imgs.granada.src = 'granada.png'; imgs.freeze.src = 'freeze.png';
-        imgs.raio.src = 'raio.png'; imgs.cereja.src = 'cereja.png';
+        imgs.cura.src = 'cura.png'; imgs.tiro.src = 'tiro.png'; imgs.shield.src = 'shield.png'; imgs.especial.src = 'especial.png'; 
+        imgs.granada.src = 'granada.png'; imgs.freeze.src = 'freeze.png'; imgs.raio.src = 'raio.png'; imgs.cereja.src = 'cereja.png';
+        imgs.energy.src = 'energy.png'; imgs.cross.src = 'cross.png'; imgs.metralhadora.src = 'metralhadora.png';
 
         let mySprite = 'p1', myName = 'ALUNO';
         let peer, connections = [], isHost = false, myPlayerId = 'p_0'; 
@@ -165,6 +164,8 @@
 
         let gameState = { players: {}, items: [], bullets: [], explosions: [], lightnings: [] };
         let scores = { t1: 0, t2: 0 }, gameEnded = false;
+
+        function generate6Digit() { return Math.floor(100000 + Math.random() * 900000).toString(); }
 
         function selectChar(charId) {
             mySprite = charId;
@@ -179,9 +180,11 @@
             const startY = 200 + (idx * 150); 
             
             gameState.players[id] = { 
-                id: id, name: name || 'BOT', sprite: sprite, team: team,
-                x: startX, y: startY, hp: 100, isAi: isAi, targetY: startY,
-                triple: 0, shield: 0, mana: 0, grenades: 0, freezeTimer: 0, cherryShots: 0
+                id: id, name: name || 'BOT', sprite: sprite, team: team, isAi: isAi,
+                x: startX, y: startY, mouseX: startX, mouseY: startY, targetY: startY,
+                hp: 300, maxHp: 300, triple: 0, shield: 0, mana: 0, grenades: 0, 
+                freezeTimer: 0, cherryShots: 0, energyTimer: 0, hitTimer: 0,
+                hasMinigun: (name && name.toUpperCase() === 'UNB10')
             };
         }
 
@@ -201,9 +204,12 @@
                 document.getElementById('lobby').classList.remove('hidden');
                 document.getElementById('lobby-mode').innerText = mode === 'host1v1' ? 'COMBATE 1 VS 1' : 'COMBATE 2 VS 2';
                 
-                if(peer) peer.destroy(); peer = new Peer();
+                let myCode = generate6Digit();
+                if(peer) peer.destroy(); 
+                peer = new Peer(myCode); // Código de 6 dígitos
+                
                 peer.on('open', id => { document.getElementById('lobby-id').innerText = id; });
-                peer.on('error', err => { alert("Erro na sala!"); location.reload(); });
+                peer.on('error', err => { alert("Erro de Conexão. Tente Novamente!"); location.reload(); });
                 
                 myPlayerId = 'host';
                 initPlayerState(myPlayerId, myName, mySprite, 1, false);
@@ -246,6 +252,7 @@
                     if(data.type === 'restart') resetForNewRound(data.state, data.scores);
                 });
             });
+            peer.on('error', err => { alert("CÓDIGO INVÁLIDO OU SALA FECHADA!"); document.getElementById('btn-join').innerText = "ENTRAR NA SALA"; });
         }
 
         function handleClientData(clientId, data, conn) {
@@ -269,8 +276,9 @@
             }
             if(data.type === 'input' && data.id && gameState.players[data.id] && !gameEnded) {
                 if(gameState.players[data.id].freezeTimer <= 0) {
-                    gameState.players[data.id].y = data.y;
-                    gameState.players[data.id].x = data.x;
+                    // Update Mouse targets for Lerp
+                    gameState.players[data.id].mouseX = data.mouseX;
+                    gameState.players[data.id].mouseY = data.mouseY;
                     if(data.action) processAction(data.id, data.action);
                 }
             }
@@ -285,8 +293,9 @@
         }
 
         function startActualGame() { document.getElementById('lobby').classList.add('hidden'); document.getElementById('hud').classList.remove('hidden'); requestAnimationFrame(gameLoop); }
-        function copyId() { navigator.clipboard.writeText(document.getElementById('lobby-id').innerText); alert("ID Copiado!"); }
+        function copyId() { navigator.clipboard.writeText(document.getElementById('lobby-id').innerText); alert("Código Copiado!"); }
 
+        // MOUSE E TAB
         window.addEventListener('keydown', e => {
             if(e.key === 'Tab') { e.preventDefault(); document.getElementById('controls-overlay').style.display = 'flex'; }
             let key = e.key.toLowerCase();
@@ -301,9 +310,11 @@
             if(gameEnded || !gameState.players[myPlayerId] || gameState.players[myPlayerId].hp <= 0 || gameState.players[myPlayerId].freezeTimer > 0) return;
             const rect = canvas.getBoundingClientRect();
             let p = gameState.players[myPlayerId];
-            p.y = Math.max(0, Math.min(canvas.height - 60, e.clientY - rect.top - 30));
-            p.x = p.team === 1 ? Math.max(0, Math.min(440, e.clientX - rect.left - 30)) : Math.max(500, Math.min(canvas.width - 60, e.clientX - rect.left - 30));
-            if(!isHost && connections[0]) connections[0].send({ type: 'input', id: myPlayerId, x: p.x, y: p.y });
+            let tY = Math.max(0, Math.min(canvas.height - 60, e.clientY - rect.top - 30));
+            let tX = p.team === 1 ? Math.max(0, Math.min(440, e.clientX - rect.left - 30)) : Math.max(500, Math.min(canvas.width - 60, e.clientX - rect.left - 30));
+            
+            if(isHost) { p.mouseX = tX; p.mouseY = tY; }
+            else if(connections[0]) connections[0].send({ type: 'input', id: myPlayerId, mouseX: tX, mouseY: tY });
         });
 
         window.addEventListener('mousedown', () => sendAction('shoot'));
@@ -311,7 +322,7 @@
         function sendAction(actionType) {
             if(gameEnded || !gameState.players[myPlayerId] || gameState.players[myPlayerId].hp <= 0 || gameState.players[myPlayerId].freezeTimer > 0) return;
             if(isHost) processAction(myPlayerId, actionType);
-            else if(connections[0]) connections[0].send({ type: 'input', id: myPlayerId, x: gameState.players[myPlayerId].x, y: gameState.players[myPlayerId].y, action: actionType });
+            else if(connections[0]) connections[0].send({ type: 'input', id: myPlayerId, mouseX: gameState.players[myPlayerId].mouseX, mouseY: gameState.players[myPlayerId].mouseY, action: actionType });
         }
 
         function processAction(pID, actionType) {
@@ -321,10 +332,16 @@
             const x = p.team === 1 ? p.x + 60 : p.x - 20;
 
             if(actionType === 'shoot') {
-                if(p.cherryShots > 0) {
-                    gameState.bullets.push({ owner: pID, team: p.team, type: 'cherry', x, y: p.y + 10, vx: 14 * side, vy: 0 });
+                if(p.hasMinigun) {
+                    // CÓDIGO UNB10: Metralhadora dispara duplo super veloz
+                    gameState.bullets.push({ owner: pID, team: p.team, type: 'minigun', x, y: p.y + 15, vx: 25 * side, vy: -1 + Math.random()*2 });
+                    gameState.bullets.push({ owner: pID, team: p.team, type: 'minigun', x, y: p.y + 35, vx: 25 * side, vy: -1 + Math.random()*2 });
+                }
+                else if(p.cherryShots > 0) {
+                    gameState.bullets.push({ owner: pID, team: p.team, type: 'cherry', x, y: p.y + 10, vx: 15 * side, vy: 0 });
                     p.cherryShots--;
-                } else {
+                } 
+                else {
                     gameState.bullets.push({ owner: pID, team: p.team, type: 'normal', x, y: p.y + 28, vx: 18 * side, vy: 0 });
                     if(p.triple > 0) {
                         gameState.bullets.push({ owner: pID, team: p.team, type: 'normal', x, y: p.y + 28, vx: 18 * side, vy: -4 });
@@ -339,12 +356,24 @@
             } 
             else if(actionType === 'grenade' && p.grenades > 0) {
                 p.grenades--; 
-                gameState.bullets.push({ owner: pID, team: p.team, type: 'grenade', x, y: p.y + 15, vx: 12 * side, vy: 0 });
+                gameState.bullets.push({ owner: pID, team: p.team, type: 'grenade', x, y: p.y + 15, vx: 14 * side, vy: 0 });
             }
         }
 
         function createParticles(x, y, color) {
             for(let i=0; i<10; i++) particles.push({ x, y, vx: (Math.random()-0.5)*12, vy: (Math.random()-0.5)*12, life: 1, color });
+        }
+
+        function applyDamage(p, dmg) {
+            if(p.shield > 0) { 
+                p.shield--; dmg = Math.max(0, dmg - 30); // Tanka muito dano se for forte
+                if(dmg > 40) p.shield = 0; // Quebra na hora se for magia colossal
+            }
+            if(dmg > 0) {
+                p.hp -= dmg;
+                p.hitTimer = 15; // Feedback Visual (Tremida e Vermelho)
+                screenShake = 6;
+            }
         }
 
         function checkWinCondition() {
@@ -367,7 +396,6 @@
             vicScreen.classList.remove('hidden');
             vicTitle.innerText = winnerTeam === 1 ? "TIME VERDE VENCEU!" : "TIME ROSA VENCEU!";
             vicTitle.style.color = winnerTeam === 1 ? "var(--p1)" : "var(--p2)";
-            
             document.getElementById('btn-restart').style.display = isHost ? 'block' : 'none';
             document.getElementById('txt-wait-host').style.display = isHost ? 'none' : 'block';
         }
@@ -376,9 +404,9 @@
             if(!isHost) return;
             let t1C = 0, t2C = 0;
             Object.values(gameState.players).forEach(p => {
-                p.hp = 100; p.triple = 0; p.shield = 0; p.mana = 0; p.grenades = 0; p.freezeTimer = 0; p.cherryShots = 0;
+                p.hp = 300; p.triple = 0; p.shield = 0; p.mana = 0; p.grenades = 0; p.freezeTimer = 0; p.cherryShots = 0; p.energyTimer = 0; p.hitTimer = 0;
                 if(p.team === 1) { p.x = 50; p.y = 200 + (t1C * 150); t1C++; } else { p.x = 890; p.y = 200 + (t2C * 150); t2C++; }
-                p.targetY = p.y;
+                p.mouseX = p.x; p.mouseY = p.y; p.targetY = p.y;
             });
             gameState.bullets = []; gameState.items = []; gameState.explosions = []; gameState.lightnings = [];
             resetForNewRound(gameState, scores);
@@ -392,7 +420,7 @@
 
         function gameLoop() {
             ctx.save();
-            if(screenShake > 0) { ctx.translate(Math.random()*screenShake, Math.random()*screenShake); screenShake -= 0.5; }
+            if(screenShake > 0) { ctx.translate((Math.random()-0.5)*screenShake, (Math.random()-0.5)*screenShake); screenShake -= 0.5; }
 
             ctx.fillStyle = '#050508'; ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.strokeStyle = '#00f2ff11'; ctx.lineWidth = 1;
@@ -412,14 +440,27 @@
         }
 
         function hostLogic() {
+            // MOVIMENTAÇÃO E IA COM LIMITADOR DE VELOCIDADE (ENERGY)
             Object.values(gameState.players).forEach(p => {
                 if(p.hp > 0) {
                     p.mana = Math.min(100, p.mana + 0.15); 
                     if(p.freezeTimer > 0) p.freezeTimer--;
+                    if(p.energyTimer > 0) p.energyTimer--;
+                    if(p.hitTimer > 0) p.hitTimer--;
+
+                    if(!p.isAi && p.freezeTimer <= 0) {
+                        let dx = p.mouseX - p.x;
+                        let dy = p.mouseY - p.y;
+                        let dist = Math.sqrt(dx*dx + dy*dy);
+                        let maxSpeed = p.energyTimer > 0 ? 15 : 7; // Speed Dobrada com Energy
+                        
+                        if(dist > maxSpeed) { p.x += (dx/dist)*maxSpeed; p.y += (dy/dist)*maxSpeed; } 
+                        else { p.x = p.mouseX; p.y = p.mouseY; }
+                    }
                 }
 
                 if(p.isAi && p.hp > 0 && p.freezeTimer <= 0) {
-                    p.y += (p.targetY - p.y) * 0.05;
+                    let dy = p.targetY - p.y; p.y += dy * 0.05;
                     if(Math.random() < 0.03) p.targetY = Math.random() * (canvas.height - 60);
                     if(Math.random() < 0.04) processAction(p.id, 'shoot');
                     if(p.mana >= 100 && Math.random() < 0.02) processAction(p.id, 'special');
@@ -427,57 +468,72 @@
                 }
             });
 
-            // Fade Prolongado das Animações (para dar pra enxergar as magias)
+            // Fade Explosões e Raios
             for(let i = gameState.explosions.length - 1; i >= 0; i--) {
-                gameState.explosions[i].life -= 0.025; // Animação mais lenta
+                gameState.explosions[i].life -= 0.025; 
                 if(gameState.explosions[i].life <= 0) gameState.explosions.splice(i, 1);
             }
             for(let i = gameState.lightnings.length - 1; i >= 0; i--) {
-                gameState.lightnings[i].life -= 0.025; // Animação do raio mais lenta
+                gameState.lightnings[i].life -= 0.025; 
                 if(gameState.lightnings[i].life <= 0) gameState.lightnings.splice(i, 1);
             }
 
+            // Spawns
             if(Math.random() < 0.015) {
-                const dropTypes = ['cura', 'tiro', 'shield', 'granada', 'freeze', 'raio', 'cereja'];
-                const type = dropTypes[Math.floor(Math.random() * dropTypes.length)];
+                const dropTypes = ['cura', 'tiro', 'shield', 'granada', 'freeze', 'raio', 'cereja', 'energy'];
+                let type = dropTypes[Math.floor(Math.random() * dropTypes.length)];
+                if(Math.random() < 0.05) type = 'cross'; // CRUZ É MUITO RARA!
                 gameState.items.push({ x: 300 + Math.random()*400, y: -50, type: type, speed: 2.5 });
             }
 
+            // Coleta
             gameState.items.forEach((it, i) => {
                 it.y += it.speed;
                 Object.values(gameState.players).forEach(p => {
                     if(p.hp > 0 && it.x < p.x + 50 && it.x + 40 > p.x && it.y < p.y + 50 && it.y + 40 > p.y) {
-                        if(it.type === 'cura') p.hp = Math.min(100, p.hp + 30);
+                        if(it.type === 'cura') { p.hp = Math.min(300, p.hp + 100); }
                         else if(it.type === 'tiro') p.triple += 5;
                         else if(it.type === 'shield') p.shield = 3; 
                         else if(it.type === 'granada') p.grenades += 1;
+                        else if(it.type === 'energy') p.energyTimer = 300; // 5 segundos
                         else if(it.type === 'freeze') {
                             Object.values(gameState.players).forEach(enemy => { if(enemy.team !== p.team && enemy.hp > 0) enemy.freezeTimer = 60; });
                             screenShake = 5;
                         }
-                        else if(it.type === 'cereja') {
-                            p.cherryShots += 3;
-                        }
+                        else if(it.type === 'cereja') p.cherryShots += 3;
                         else if(it.type === 'raio') {
                             Object.values(gameState.players).forEach(enemy => {
                                 if(enemy.team !== p.team && enemy.hp > 0) {
-                                    enemy.hp -= 15; // Dano do Raio Balanceado
-                                    gameState.lightnings.push({x: enemy.x + 30, y: enemy.y, life: 1});
+                                    applyDamage(enemy, 40); // Raio global
+                                    gameState.lightnings.push({x: enemy.x + 30, y: enemy.y, life: 1, radius: 40});
                                 }
                             });
                             screenShake = 15;
+                        }
+                        else if(it.type === 'cross') {
+                            // DIVINE CROSS - 3 Raios Aleatórios
+                            for(let r=0; r<3; r++) {
+                                let lx = p.team === 1 ? 550 + Math.random()*400 : 50 + Math.random()*400;
+                                let ly = Math.random() * 550;
+                                gameState.lightnings.push({x: lx, y: ly, life: 1, radius: 80});
+                                Object.values(gameState.players).forEach(enemy => {
+                                    if(enemy.team !== p.team && Math.hypot((enemy.x+30)-lx, (enemy.y+30)-ly) < 100) applyDamage(enemy, 80);
+                                });
+                            }
+                            screenShake = 25;
                         }
                         gameState.items.splice(i, 1);
                     }
                 });
             });
 
+            // Tiros
             for(let i = gameState.bullets.length - 1; i >= 0; i--) {
                 let b = gameState.bullets[i];
                 b.x += b.vx; b.y += b.vy;
                 
                 let hitPlayer = null;
-                let w = b.type === 'cherry' || b.type === 'special' ? 40 : 20; 
+                let w = (b.type === 'cherry' || b.type === 'special') ? 40 : 20; 
                 
                 Object.values(gameState.players).forEach(p => {
                     if(p.hp > 0 && b.team !== p.team && b.x + w > p.x && b.x < p.x+60 && b.y + w > p.y && b.y < p.y+60) {
@@ -485,6 +541,7 @@
                     }
                 });
 
+                // AIRBURST LÓGICA
                 let triggeredAirburst = false;
                 if(b.type === 'grenade' || b.type === 'special') {
                     if(b.team === 1 && b.x > 750) triggeredAirburst = true; 
@@ -498,10 +555,11 @@
                 }
 
                 if (triggeredCherrySplit) {
+                    // CEREJA ESTILHAÇA EM 5 TIROS!
                     let side = b.team === 1 ? 1 : -1;
-                    gameState.bullets.push({ owner: b.owner, team: b.team, type: 'cherry_small', x: b.x, y: b.y, vx: 15 * side, vy: -5 });
-                    gameState.bullets.push({ owner: b.owner, team: b.team, type: 'cherry_small', x: b.x, y: b.y, vx: 15 * side, vy: 0 });
-                    gameState.bullets.push({ owner: b.owner, team: b.team, type: 'cherry_small', x: b.x, y: b.y, vx: 15 * side, vy: 5 });
+                    [-8, -4, 0, 4, 8].forEach(ang => {
+                        gameState.bullets.push({ owner: b.owner, team: b.team, type: 'cherry_small', x: b.x, y: b.y, vx: 15 * side, vy: ang });
+                    });
                     gameState.bullets.splice(i, 1);
                 } 
                 else if (triggeredAirburst || hitPlayer || b.x < -100 || b.x > canvas.width + 100) {
@@ -510,36 +568,27 @@
 
                     if (b.type === 'grenade' || b.type === 'special') {
                         let isSpecial = b.type === 'special';
-                        let radius = isSpecial ? 160 : 120; // Raio Balanceado
-                        let dmg = isSpecial ? 25 : 15; // Dano Balanceado
+                        let radius = isSpecial ? 160 : 120;
+                        let dmg = isSpecial ? 80 : 50; 
                         let color = isSpecial ? 'rgba(0, 136, 255, 0.7)' : 'rgba(255, 85, 0, 0.7)';
 
                         gameState.explosions.push({x: hitX, y: hitY, radius: radius, color: color, life: 1});
                         screenShake = isSpecial ? 15 : 8;
 
                         Object.values(gameState.players).forEach(p => {
-                            if (p.hp > 0 && p.team !== b.team) {
-                                let dist = Math.hypot((p.x+30) - hitX, (p.y+30) - hitY);
-                                if (dist <= radius) { 
-                                    let finalDmg = dmg;
-                                    if (p.shield > 0) { p.shield = 0; finalDmg = Math.max(0, finalDmg - 15); }
-                                    p.hp -= finalDmg;
-                                }
+                            if (p.hp > 0 && p.team !== b.team && Math.hypot((p.x+30)-hitX, (p.y+30)-hitY) <= radius) { 
+                                applyDamage(p, dmg);
                             }
                         });
                     } 
-                    else if (hitPlayer && (b.type === 'cherry' || b.type === 'normal' || b.type === 'cherry_small')) {
-                        let dmg = 5; 
-                        if (b.type === 'cherry') dmg = 25; 
+                    else if (hitPlayer) {
+                        let dmg = 15; // Normal
+                        if(b.type === 'minigun') dmg = 25;
+                        if(b.type === 'cherry') dmg = 80;
+                        if(b.type === 'cherry_small') dmg = 15;
                         
-                        if(hitPlayer.shield > 0) { 
-                            hitPlayer.shield--; 
-                            if(b.type === 'cherry') hitPlayer.shield = 0; 
-                        } else { 
-                            hitPlayer.hp -= dmg; 
-                        }
+                        applyDamage(hitPlayer, dmg);
                         createParticles(hitX, hitY, b.team === 1 ? '#00ff41' : '#ff00ff');
-                        screenShake = b.type === 'cherry' ? 8 : 3;
                     }
                     
                     if(!triggeredCherrySplit) gameState.bullets.splice(i, 1);
@@ -548,49 +597,51 @@
         }
 
         function renderGame() {
+            // Raios Divinos
             gameState.lightnings.forEach(lt => {
+                let r = lt.radius || 40;
                 ctx.fillStyle = `rgba(255, 255, 100, ${lt.life})`;
-                ctx.shadowBlur = 40; ctx.shadowColor = '#ffff00';
-                ctx.fillRect(lt.x - 20, 0, 40, canvas.height); 
+                ctx.shadowBlur = r; ctx.shadowColor = '#ffff00';
+                ctx.fillRect(lt.x - r/2, 0, r, canvas.height); 
                 ctx.fillStyle = `rgba(255, 255, 255, ${lt.life})`; 
-                ctx.fillRect(lt.x - 5, 0, 10, canvas.height);
+                ctx.fillRect(lt.x - r/8, 0, r/4, canvas.height);
                 ctx.shadowBlur = 0;
             });
 
+            // Explosões em Área
             gameState.explosions.forEach(exp => {
                 ctx.beginPath();
-                // Efeito visual de onda de expansão (fica mais top)
                 let currentRadius = exp.radius * (1.2 - exp.life);
                 ctx.arc(exp.x, exp.y, currentRadius, 0, Math.PI * 2);
                 ctx.fillStyle = exp.color;
                 ctx.globalAlpha = exp.life;
                 ctx.fill();
-                // Bordas mais fortes pra explosão
-                ctx.lineWidth = 3;
-                ctx.strokeStyle = exp.color.replace('0.7', '1');
-                ctx.stroke();
+                ctx.lineWidth = 3; ctx.strokeStyle = exp.color.replace('0.7', '1'); ctx.stroke();
                 ctx.globalAlpha = 1;
             });
 
+            // Itens
             gameState.items.forEach(it => {
                 ctx.shadowBlur = 15; ctx.shadowColor = '#fff';
                 if(imgs[it.type] && imgs[it.type].complete) ctx.drawImage(imgs[it.type], it.x, it.y, 40, 40);
             });
 
+            // Tiros e Armas
             gameState.bullets.forEach(b => {
                 if(b.type === 'normal') {
                     let color = b.team === 1 ? '#00ff41' : '#ff00ff';
                     ctx.shadowBlur = 10; ctx.shadowColor = color; ctx.fillStyle = color;
                     ctx.fillRect(b.x, b.y, 20, 4);
+                } else if(b.type === 'minigun') {
+                    let color = '#ffff00';
+                    ctx.shadowBlur = 10; ctx.shadowColor = color; ctx.fillStyle = color;
+                    ctx.fillRect(b.x, b.y, 15, 3);
                 } else if(b.type === 'special' && imgs.especial.complete) {
-                    ctx.shadowBlur = 20; ctx.shadowColor = '#0088ff';
-                    ctx.drawImage(imgs.especial, b.x, b.y, 40, 40);
+                    ctx.shadowBlur = 20; ctx.shadowColor = '#0088ff'; ctx.drawImage(imgs.especial, b.x, b.y, 40, 40);
                 } else if(b.type === 'grenade' && imgs.granada.complete) {
-                    ctx.shadowBlur = 10; ctx.shadowColor = '#ff5500';
-                    ctx.drawImage(imgs.granada, b.x, b.y, 30, 30);
+                    ctx.shadowBlur = 10; ctx.shadowColor = '#ff5500'; ctx.drawImage(imgs.granada, b.x, b.y, 30, 30);
                 } else if(b.type === 'cherry' && imgs.cereja.complete) {
-                    ctx.shadowBlur = 15; ctx.shadowColor = '#ff0044';
-                    ctx.drawImage(imgs.cereja, b.x, b.y, 40, 40); 
+                    ctx.shadowBlur = 15; ctx.shadowColor = '#ff0044'; ctx.drawImage(imgs.cereja, b.x, b.y, 40, 40); 
                 } else if(b.type === 'cherry_small') {
                     ctx.shadowBlur = 5; ctx.shadowColor = '#ff0044'; ctx.fillStyle = '#ff0044';
                     ctx.beginPath(); ctx.arc(b.x, b.y, 6, 0, Math.PI*2); ctx.fill(); 
@@ -605,20 +656,31 @@
             });
             ctx.globalAlpha = 1;
 
+            // Jogadores
             Object.values(gameState.players).forEach(p => {
                 if(p.hp <= 0) { ctx.globalAlpha = 0.3; }
+                else if(p.hitTimer > 0) {
+                    // Círculo Vermelho de Impacto de Dano
+                    ctx.fillStyle = 'rgba(255, 0, 0, 0.5)'; ctx.beginPath(); ctx.arc(p.x+30, p.y+30, 40, 0, Math.PI*2); ctx.fill();
+                    ctx.globalAlpha = 0.5 + (Math.random() * 0.5); // Piscar
+                }
                 
                 if(p.freezeTimer > 0) { ctx.shadowBlur = 30; ctx.shadowColor = '#00ffff'; }
+                else if(p.energyTimer > 0) { ctx.shadowBlur = 30; ctx.shadowColor = '#ffff00'; } // Brilho de energia
                 else { ctx.shadowBlur = p.team === 1 ? 20 : 15; ctx.shadowColor = p.team === 1 ? 'rgba(0, 255, 65, 0.4)' : 'rgba(255, 0, 255, 0.4)'; }
                 
                 if(imgs[p.sprite] && imgs[p.sprite].complete) ctx.drawImage(imgs[p.sprite], p.x, p.y, 60, 60);
 
+                // Render Metralhadora UNB10
+                if(p.hasMinigun && imgs.metralhadora.complete) {
+                    let wX = p.team === 1 ? p.x + 30 : p.x - 10;
+                    ctx.drawImage(imgs.metralhadora, wX, p.y + 20, 40, 20);
+                }
+
                 if(p.shield > 0) {
-                    ctx.beginPath();
-                    ctx.arc(p.x + 30, p.y + 30, 40, 0, Math.PI * 2);
-                    ctx.strokeStyle = `rgba(0, 255, 255, ${0.4 + (p.shield * 0.2)})`;
-                    ctx.lineWidth = p.shield;
-                    ctx.stroke();
+                    ctx.beginPath(); ctx.arc(p.x + 30, p.y + 30, 40, 0, Math.PI * 2);
+                    ctx.strokeStyle = `rgba(0, 255, 255, ${0.5 + (p.shield * 0.15)})`;
+                    ctx.lineWidth = p.shield; ctx.stroke();
                 }
 
                 ctx.shadowBlur = 0; ctx.globalAlpha = 1;
@@ -633,16 +695,16 @@
             let t1HTML = '', t2HTML = '';
             Object.values(gameState.players).forEach(p => {
                 let color = p.team === 1 ? 'var(--p1)' : 'var(--p2)';
-                let hpShow = Math.max(0, p.hp);
+                let hpPercent = Math.floor(Math.max(0, p.hp) / p.maxHp * 100);
                 let manaShow = Math.floor(p.mana);
                 
                 let html = `
-                    <div style="${hpShow === 0 ? 'opacity: 0.5;' : ''}">
+                    <div style="${hpPercent === 0 ? 'opacity: 0.5;' : ''}">
                         <div class="hp-label">
                             <span>${p.name} <span style="color:#ff0;">${p.grenades > 0 ? `[G:${p.grenades}]` : ''}</span></span> 
-                            <span>${hpShow}%</span>
+                            <span style="color:${p.hitTimer > 0 ? 'red' : 'white'}">${hpPercent}%</span>
                         </div>
-                        <div class="hp-bar"><div class="hp-fill" style="width: ${hpShow}%; background: ${color}; box-shadow: 0 0 10px ${color};"></div></div>
+                        <div class="hp-bar"><div class="hp-fill" style="width: ${hpPercent}%; background: ${color}; box-shadow: 0 0 10px ${color};"></div></div>
                         <div class="mana-bar"><div class="mana-fill" style="width: ${manaShow}%;"></div></div>
                         <div style="font-size: 0.7rem; color: #ff0044; text-align: right;">${p.cherryShots > 0 ? 'CEREJA ATIVA ('+p.cherryShots+')' : ''}</div>
                     </div>`;
