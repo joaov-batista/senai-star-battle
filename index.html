@@ -6,12 +6,12 @@
     <title>Arena Senai: Overdrive</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        :root { --neon: #00ffcc; --p1: #00ff41; --p2: #ff00ff; --gold: #ffcc00; --bg: #050508; --mana: #0088ff; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', Orbitron, sans-serif; margin: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
+        :root { --neon: #00ffcc; --p1: #00ff41; --p2: #ff00ff; --gold: #ffcc00; --bg: #050508; --mana: #0088ff; --kick: #ffaa00; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', Orbitron, sans-serif; margin: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
         
         .screen { position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle at center, #101020 0%, #000 100%); z-index: 100; transition: 0.5s; }
-        .hidden { opacity: 0; pointer-events: none; transform: scale(1.1); z-index: -1; }
-        .menu-card { background: rgba(0, 0, 0, 0.8); padding: 30px; border-radius: 20px; border: 1px solid var(--neon); backdrop-filter: blur(15px); text-align: center; box-shadow: 0 0 50px rgba(0, 255, 204, 0.15); width: 450px; }
+        .hidden { opacity: 0; pointer-events: none; transform: scale(1.1); z-index: -1; display: none !important; }
+        .menu-card { background: rgba(0, 0, 0, 0.8); padding: 30px; border-radius: 20px; border: 1px solid var(--neon); backdrop-filter: blur(15px); text-align: center; box-shadow: 0 0 50px rgba(0, 255, 204, 0.15); width: 500px; }
         h1 { font-size: 3rem; text-shadow: 0 0 20px var(--neon); color: var(--neon); margin: 0 0 10px 0; font-style: italic; }
         
         input[type="text"] { width: 90%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid var(--neon); color: white; font-size: 1.2rem; text-align: center; margin-bottom: 20px; outline: none; font-weight: bold; letter-spacing: 2px;}
@@ -25,21 +25,25 @@
         button:hover { background: var(--neon); color: #000; box-shadow: 0 0 20px var(--neon); }
         .btn-full { width: 100%; flex: none; }
 
-        /* HUD, Placar e Barras */
-        #hud { position: absolute; top: 0; width: 100%; display: flex; justify-content: space-between; align-items: flex-start; padding: 15px 50px; box-sizing: border-box; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); z-index: 50; }
-        .team-hud { display: flex; flex-direction: column; gap: 10px; width: 250px; }
+        /* NOVO LAYOUT DO JOGO (RESPONSIVO E CENTRALIZADO) */
+        #game-container { width: 1200px; max-width: 95vw; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        
+        #hud { width: 100%; display: flex; justify-content: space-between; align-items: flex-start; padding: 15px 20px; box-sizing: border-box; background: rgba(0,0,0,0.8); border: 1px solid #333; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .team-hud { display: flex; flex-direction: column; gap: 10px; min-width: 250px; }
         .hp-label { font-size: 0.9rem; font-weight: bold; display: flex; justify-content: space-between; margin-bottom: 2px;}
         .hp-bar { width: 100%; height: 8px; background: #111; position: relative; border-radius: 3px; overflow: hidden; margin-bottom: 2px; }
         .hp-fill { height: 100%; width: 100%; transition: width 0.2s; }
         .mana-bar { width: 100%; height: 4px; background: #111; position: relative; border-radius: 2px; overflow: hidden; }
         .mana-fill { height: 100%; width: 0%; background: var(--mana); transition: width 0.2s; box-shadow: 0 0 5px var(--mana); }
+        .kick-fill { height: 100%; width: 0%; background: var(--kick); transition: width 0.2s; box-shadow: 0 0 5px var(--kick); }
         
-        #scoreboard { background: rgba(0,0,0,0.8); border: 2px solid var(--gold); padding: 5px 20px; border-radius: 10px; text-align: center; margin-top: -10px; box-shadow: 0 0 20px rgba(255, 204, 0, 0.2); }
-        .score-text { font-size: 1.8rem; font-weight: bold; color: white; display: flex; gap: 20px; align-items: center;}
+        #scoreboard { background: rgba(0,0,0,0.6); border: 2px solid var(--gold); padding: 5px 20px; border-radius: 10px; text-align: center; box-shadow: 0 0 20px rgba(255, 204, 0, 0.2); }
+        .score-text { font-size: 1.8rem; font-weight: bold; color: white; display: flex; gap: 20px; align-items: center; justify-content: center;}
         .score-t1 { color: var(--p1); text-shadow: 0 0 10px var(--p1); }
         .score-t2 { color: var(--p2); text-shadow: 0 0 10px var(--p2); }
 
-        canvas { background: #000; box-shadow: 0 0 100px rgba(0,0,0,1); }
+        canvas { width: 100%; height: auto; aspect-ratio: 12 / 7; background: #000; box-shadow: 0 0 50px rgba(0,0,0,1); border: 2px solid #111; border-radius: 5px; }
+        
         #lobby-players-list { background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px; text-align: left; margin: 20px 0; min-height: 100px; border: 1px solid #333; }
         .lobby-slot { padding: 5px; font-size: 1.1rem; border-bottom: 1px solid #222; }
 
@@ -73,10 +77,18 @@
                 <div class="char-select" id="sel-p7" style="background-image: url('player7.png');" onclick="selectChar('p7')"></div>
             </div>
 
+            <p style="margin: 5px 0; color: #aaa; font-size: 0.8rem; border-top: 1px solid #333; padding-top: 10px;">MODO ARENA (TIROTEIO)</p>
             <div class="btn-group">
-                <button onclick="startGame('pve')" class="btn-full" style="border-color: var(--gold); color: var(--gold);">SOLO (PLAYER VS IA)</button>
-                <button onclick="startGame('host1v1')">CRIAR SALA 1v1</button>
-                <button onclick="startGame('host2v2')">CRIAR SALA 2v2</button>
+                <button onclick="startGame('pve')" class="btn-full" style="border-color: var(--gold); color: var(--gold);">SOLO (VS IA)</button>
+                <button onclick="startGame('host1v1')">SALA 1v1</button>
+                <button onclick="startGame('host2v2')">SALA 2v2</button>
+            </div>
+            
+            <p style="margin: 5px 0; color: #aaa; font-size: 0.8rem;">MODO FUTEBOL (PONG)</p>
+            <div class="btn-group">
+                <button onclick="startGame('futebol_pve')" class="btn-full" style="border-color: #0088ff; color: #0088ff;">SOLO (VS IA)</button>
+                <button onclick="startGame('futebol_1v1')" style="border-color: #0088ff; color: #0088ff;">SALA 1v1</button>
+                <button onclick="startGame('futebol_2v2')" style="border-color: #0088ff; color: #0088ff;">SALA 2v2</button>
             </div>
             
             <div style="margin-top: 10px; border-top: 1px solid #333; padding-top: 15px;">
@@ -90,18 +102,18 @@
         <div class="controls-box">
             <h2 style="color: var(--neon); text-align: center; margin-top: 0;">MANUAL DA ARENA</h2>
             <div style="text-align: center; font-size: 1.1rem; margin-bottom: 20px;">
-                <b>MOUSE:</b> Move a unidade | <b>CLIQUE ESQUERDO:</b> Tiro Normal<br>
+                <b>MOUSE:</b> Move a unidade | <b>CLIQUE ESQUERDO:</b> Tiro Normal (Ou Super Chute no Futebol)<br>
                 <b>TECLA E:</b> Lança Granada | <b>TECLA R:</b> Usa o Especial (Peixe)
             </div>
             <div class="controls-list">
                 <div><div class="item-title">🔋 Cura / Tiro</div>Cura 100 de HP. Tiro triplica sua arma.</div>
                 <div><div class="item-title">🛡️ Escudo (shield.png)</div>Anula até 3 tiros fracos ou tanka metade de uma explosão.</div>
-                <div><div class="item-title">💣 Granada (granada.png)</div>Aperte E. Explode no ar ao entrar na base inimiga!</div>
+                <div><div class="item-title">💣 Granada (granada.png)</div>Aperte E. Explode na base inimiga!</div>
                 <div><div class="item-title">🐟 Especial (especial.png)</div>Aperte R com Mana em 100%. Super detonação em área.</div>
                 <div><div class="item-title">❄️ Freeze (freeze.png)</div>Congela todo o time inimigo por exatos 1 segundo.</div>
                 <div><div class="item-title">⚡ Raio (raio.png)</div>Dano global. Um raio cai na cabeça de todos os inimigos vivos.</div>
-                <div><div class="item-title">🍒 Cereja (cereja.png)</div>3 Tiros Gigantes. Se chegarem no lado inimigo, estilhaçam em 5!</div>
-                <div><div class="item-title">⚡ Energy (energy.png)</div>Dobra sua velocidade de movimento por 5 segundos.</div>
+                <div><div class="item-title">🍒 Cereja (cereja.png)</div>3 Tiros Gigantes. Estilhaçam em 5 ao cruzar a arena!</div>
+                <div><div class="item-title">🔫 Metralhadora (metralhadora.png)</div>Substitui seu tiro normal por 100 disparos super velozes.</div>
                 <div><div class="item-title">✝️ Cruz (cross.png)</div>ITEM RARO! 3 Pilares divinos devastam partes da arena inimiga.</div>
             </div>
         </div>
@@ -122,26 +134,27 @@
         </div>
     </div>
 
-    <div id="hud" class="hidden">
-        <div class="team-hud" id="team1-hud" style="color: var(--p1);"></div>
-        <div id="scoreboard">
-            <div style="font-size: 0.8rem; color: var(--gold); margin-bottom: 5px;">PLACAR GLOBAL</div>
-            <div class="score-text">
-                <span id="score-val-1" class="score-t1">0</span> <span>X</span> <span id="score-val-2" class="score-t2">0</span>
+    <div id="game-container" class="hidden">
+        <div id="hud">
+            <div class="team-hud" id="team1-hud" style="color: var(--p1);"></div>
+            <div id="scoreboard">
+                <div id="placar-title" style="font-size: 0.8rem; color: var(--gold); margin-bottom: 5px;">PLACAR GLOBAL</div>
+                <div class="score-text">
+                    <span id="score-val-1" class="score-t1">0</span> <span>X</span> <span id="score-val-2" class="score-t2">0</span>
+                </div>
+                <div style="font-size: 0.7rem; color: #888; margin-top: 5px;">SEGURE [TAB] P/ CONTROLES</div>
             </div>
-            <div style="font-size: 0.7rem; color: #888; margin-top: 5px;">SEGURE [TAB] P/ CONTROLES</div>
+            <div class="team-hud" id="team2-hud" style="color: var(--p2); text-align: right;"></div>
         </div>
-        <div class="team-hud" id="team2-hud" style="color: var(--p2); text-align: right;"></div>
+        <canvas id="game" width="1200" height="700"></canvas>
     </div>
 
     <div id="victory-screen" class="hidden">
         <h1 id="victory-title" style="color: var(--gold);">VITÓRIA!</h1>
-        <p id="victory-subtitle" style="color: #aaa; font-size: 1.2rem; margin-bottom: 30px;">A ARENA FOI DOMINADA</p>
+        <p id="victory-subtitle" style="color: #aaa; font-size: 1.2rem; margin-bottom: 30px;">O JOGO ACABOU</p>
         <button id="btn-restart" onclick="restartRound()" style="font-size: 1.2rem; padding: 15px 40px; border-color: var(--gold); color: var(--gold); display: none;">NOVA RODADA</button>
         <p id="txt-wait-host" style="color: #aaa; font-style: italic; display: none;">Aguardando o Host iniciar...</p>
     </div>
-
-    <canvas id="game" width="1000" height="600"></canvas>
 
     <script>
         const canvas = document.getElementById('game');
@@ -150,19 +163,19 @@
         const imgs = { 
             p1: new Image(), p2: new Image(), p3: new Image(), p4: new Image(), p5: new Image(), p6: new Image(), p7: new Image(),
             cura: new Image(), tiro: new Image(), shield: new Image(), especial: new Image(), granada: new Image(), 
-            freeze: new Image(), raio: new Image(), cereja: new Image(), energy: new Image(), cross: new Image(), metralhadora: new Image()
+            freeze: new Image(), raio: new Image(), cereja: new Image(), energy: new Image(), cross: new Image(), metralhadora: new Image(), quadra: new Image()
         };
         imgs.p1.src = 'player1.png'; imgs.p2.src = 'player2.png'; imgs.p3.src = 'player3.png'; imgs.p4.src = 'player4.png';
         imgs.p5.src = 'player5.png'; imgs.p6.src = 'player6.png'; imgs.p7.src = 'player7.png';
         imgs.cura.src = 'cura.png'; imgs.tiro.src = 'tiro.png'; imgs.shield.src = 'shield.png'; imgs.especial.src = 'especial.png'; 
         imgs.granada.src = 'granada.png'; imgs.freeze.src = 'freeze.png'; imgs.raio.src = 'raio.png'; imgs.cereja.src = 'cereja.png';
-        imgs.energy.src = 'energy.png'; imgs.cross.src = 'cross.png'; imgs.metralhadora.src = 'metralhadora.png';
+        imgs.energy.src = 'energy.png'; imgs.cross.src = 'cross.png'; imgs.metralhadora.src = 'metralhadora.png'; imgs.quadra.src = 'quadra.jpg';
 
         let mySprite = 'p1', myName = 'ALUNO';
         let peer, connections = [], isHost = false, myPlayerId = 'p_0'; 
         let gridOffset = 0, screenShake = 0, particles = [], maxPlayers = 1, clientCounter = 1;
 
-        let gameState = { players: {}, items: [], bullets: [], explosions: [], lightnings: [] };
+        let gameState = { mode: 'arena', players: {}, items: [], bullets: [], explosions: [], lightnings: [], bola: null };
         let scores = { t1: 0, t2: 0 }, gameEnded = false;
 
         function generate6Digit() { return Math.floor(100000 + Math.random() * 900000).toString(); }
@@ -176,15 +189,15 @@
         function initPlayerState(id, name, sprite, team, isAi = false) {
             let teamArr = Object.values(gameState.players).filter(p => p.team === team);
             let idx = teamArr.length;
-            const startX = team === 1 ? 50 : 890;
+            const startX = team === 1 ? 50 : 1090; 
             const startY = 200 + (idx * 150); 
             
             gameState.players[id] = { 
                 id: id, name: name || 'BOT', sprite: sprite, team: team, isAi: isAi,
-                x: startX, y: startY, mouseX: startX, mouseY: startY, targetY: startY,
+                x: startX, y: startY, mouseX: startX, mouseY: startY, targetY: startY, targetX: startX,
                 hp: 300, maxHp: 300, triple: 0, shield: 0, mana: 0, grenades: 0, 
-                freezeTimer: 0, cherryShots: 0, energyTimer: 0, hitTimer: 0,
-                hasMinigun: (name && name.toUpperCase() === 'UNB10')
+                freezeTimer: 0, cherryShots: 0, energyTimer: 0, hitTimer: 0, kickCharge: 0,
+                hasMinigun: (name && name.toUpperCase() === 'UNB10'), minigunAmmo: (name && name.toUpperCase() === 'UNB10') ? 9999 : 0
             };
         }
 
@@ -193,20 +206,35 @@
             if(inputName) myName = inputName.toUpperCase();
             document.getElementById('menu').classList.add('hidden');
 
-            if(mode === 'pve') {
-                document.getElementById('hud').classList.remove('hidden');
+            gameState.mode = mode.includes('futebol') ? 'futebol' : 'arena';
+
+            if(mode === 'pve' || mode === 'futebol_pve') {
+                document.getElementById('game-container').classList.remove('hidden');
                 isHost = true; myPlayerId = 'player1';
                 initPlayerState(myPlayerId, myName, mySprite, 1, false);
                 initPlayerState('bot_senai', 'IA SENAI', 'p2', 2, true);
+                
+                if(gameState.mode === 'futebol') {
+                    resetBola(1);
+                    document.getElementById('placar-title').innerText = "GOLS (PRIMEIRO A 10 VENCE)";
+                }
                 requestAnimationFrame(gameLoop);
             } else {
-                isHost = true; maxPlayers = mode === 'host1v1' ? 2 : 4; clientCounter = 1;
+                isHost = true; 
+                maxPlayers = (mode === 'host1v1' || mode === 'futebol_1v1') ? 2 : 4; 
+                clientCounter = 1;
                 document.getElementById('lobby').classList.remove('hidden');
-                document.getElementById('lobby-mode').innerText = mode === 'host1v1' ? 'COMBATE 1 VS 1' : 'COMBATE 2 VS 2';
+                
+                let modeText = 'COMBATE';
+                if(mode === 'host1v1') modeText = 'ARENA 1 VS 1';
+                if(mode === 'host2v2') modeText = 'ARENA 2 VS 2';
+                if(mode === 'futebol_1v1') modeText = 'FUTEBOL (PONG) 1 VS 1';
+                if(mode === 'futebol_2v2') modeText = 'FUTEBOL (PONG) 2 VS 2';
+                document.getElementById('lobby-mode').innerText = modeText;
                 
                 let myCode = generate6Digit();
                 if(peer) peer.destroy(); 
-                peer = new Peer(myCode); // Código de 6 dígitos
+                peer = new Peer(myCode);
                 
                 peer.on('open', id => { document.getElementById('lobby-id').innerText = id; });
                 peer.on('error', err => { alert("Erro de Conexão. Tente Novamente!"); location.reload(); });
@@ -271,12 +299,12 @@
 
                 if(Object.keys(gameState.players).length === maxPlayers) {
                     document.getElementById('lobby-status').innerText = "TODOS CONECTADOS! INICIANDO...";
+                    if(gameState.mode === 'futebol') resetBola(1);
                     setTimeout(() => { connections.forEach(c => c.send({ type: 'start_game', state: gameState })); startActualGame(); }, 1500);
                 }
             }
             if(data.type === 'input' && data.id && gameState.players[data.id] && !gameEnded) {
                 if(gameState.players[data.id].freezeTimer <= 0) {
-                    // Update Mouse targets for Lerp
                     gameState.players[data.id].mouseX = data.mouseX;
                     gameState.players[data.id].mouseY = data.mouseY;
                     if(data.action) processAction(data.id, data.action);
@@ -292,10 +320,18 @@
             document.getElementById('lobby-players-list').innerHTML = html;
         }
 
-        function startActualGame() { document.getElementById('lobby').classList.add('hidden'); document.getElementById('hud').classList.remove('hidden'); requestAnimationFrame(gameLoop); }
+        function startActualGame() { 
+            document.getElementById('lobby').classList.add('hidden'); 
+            document.getElementById('game-container').classList.remove('hidden');
+            if(gameState.mode === 'futebol') document.getElementById('placar-title').innerText = "GOLS (PRIMEIRO A 10 VENCE)";
+            requestAnimationFrame(gameLoop); 
+        }
         function copyId() { navigator.clipboard.writeText(document.getElementById('lobby-id').innerText); alert("Código Copiado!"); }
 
-        // MOUSE E TAB
+        function resetBola(dir) {
+            gameState.bola = { x: canvas.width/2, y: canvas.height/2, vx: 5 * dir, vy: (Math.random()-0.5)*8, radius: 20, delay: 60 };
+        }
+
         window.addEventListener('keydown', e => {
             if(e.key === 'Tab') { e.preventDefault(); document.getElementById('controls-overlay').style.display = 'flex'; }
             let key = e.key.toLowerCase();
@@ -306,12 +342,22 @@
             if(e.key === 'Tab') { document.getElementById('controls-overlay').style.display = 'none'; }
         });
 
+        // MOVIMENTAÇÃO DO MOUSE COM CÁLCULO DE ESCALA PARA RESPONSIVIDADE
         window.addEventListener('mousemove', e => {
             if(gameEnded || !gameState.players[myPlayerId] || gameState.players[myPlayerId].hp <= 0 || gameState.players[myPlayerId].freezeTimer > 0) return;
             const rect = canvas.getBoundingClientRect();
+            
+            // Corrige a posição do mouse perfeitamente independente da resolução/escala
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
             let p = gameState.players[myPlayerId];
-            let tY = Math.max(0, Math.min(canvas.height - 60, e.clientY - rect.top - 30));
-            let tX = p.team === 1 ? Math.max(0, Math.min(440, e.clientX - rect.left - 30)) : Math.max(500, Math.min(canvas.width - 60, e.clientX - rect.left - 30));
+            
+            let rawX = (e.clientX - rect.left) * scaleX - 30;
+            let rawY = (e.clientY - rect.top) * scaleY - 30;
+            
+            let tY = Math.max(0, Math.min(canvas.height - 60, rawY));
+            let tX = p.team === 1 ? Math.max(0, Math.min(canvas.width/2 - 60, rawX)) : Math.max(canvas.width/2, Math.min(canvas.width - 60, rawX));
             
             if(isHost) { p.mouseX = tX; p.mouseY = tY; }
             else if(connections[0]) connections[0].send({ type: 'input', id: myPlayerId, mouseX: tX, mouseY: tY });
@@ -331,11 +377,24 @@
             const side = p.team === 1 ? 1 : -1;
             const x = p.team === 1 ? p.x + 60 : p.x - 20;
 
+            if (gameState.mode === 'futebol') {
+                if (actionType === 'shoot' && p.kickCharge >= 100) {
+                    if (gameState.bola && Math.hypot((p.x+30)-gameState.bola.x, (p.y+30)-gameState.bola.y) < 130) {
+                        gameState.bola.vx = 25 * side;
+                        gameState.bola.vy = ((gameState.bola.y - (p.y+30))/30) * 15;
+                        p.kickCharge = 0;
+                        screenShake = 15;
+                    }
+                }
+                return; 
+            }
+
             if(actionType === 'shoot') {
-                if(p.hasMinigun) {
-                    // CÓDIGO UNB10: Metralhadora dispara duplo super veloz
+                if(p.hasMinigun && p.minigunAmmo > 0) {
                     gameState.bullets.push({ owner: pID, team: p.team, type: 'minigun', x, y: p.y + 15, vx: 25 * side, vy: -1 + Math.random()*2 });
                     gameState.bullets.push({ owner: pID, team: p.team, type: 'minigun', x, y: p.y + 35, vx: 25 * side, vy: -1 + Math.random()*2 });
+                    p.minigunAmmo -= 2;
+                    if(p.minigunAmmo <= 0) p.hasMinigun = false;
                 }
                 else if(p.cherryShots > 0) {
                     gameState.bullets.push({ owner: pID, team: p.team, type: 'cherry', x, y: p.y + 10, vx: 15 * side, vy: 0 });
@@ -366,18 +425,28 @@
 
         function applyDamage(p, dmg) {
             if(p.shield > 0) { 
-                p.shield--; dmg = Math.max(0, dmg - 30); // Tanka muito dano se for forte
-                if(dmg > 40) p.shield = 0; // Quebra na hora se for magia colossal
+                p.shield--; dmg = Math.max(0, dmg - 30);
+                if(dmg > 40) p.shield = 0; 
             }
             if(dmg > 0) {
                 p.hp -= dmg;
-                p.hitTimer = 15; // Feedback Visual (Tremida e Vermelho)
+                p.hitTimer = 15; 
                 screenShake = 6;
             }
         }
 
         function checkWinCondition() {
             if(gameEnded || !isHost) return;
+
+            if (gameState.mode === 'futebol') {
+                if(scores.t1 >= 10 || scores.t2 >= 10) {
+                    let winner = scores.t1 >= 10 ? 1 : 2;
+                    triggerGameOver(winner, scores);
+                    connections.forEach(c => c.send({ type: 'game_over', winner: winner, scores: scores }));
+                }
+                return;
+            }
+
             let t1Alive = Object.values(gameState.players).some(p => p.team === 1 && p.hp > 0);
             let t2Alive = Object.values(gameState.players).some(p => p.team === 2 && p.hp > 0);
             if(!t1Alive || !t2Alive) {
@@ -404,11 +473,13 @@
             if(!isHost) return;
             let t1C = 0, t2C = 0;
             Object.values(gameState.players).forEach(p => {
-                p.hp = 300; p.triple = 0; p.shield = 0; p.mana = 0; p.grenades = 0; p.freezeTimer = 0; p.cherryShots = 0; p.energyTimer = 0; p.hitTimer = 0;
-                if(p.team === 1) { p.x = 50; p.y = 200 + (t1C * 150); t1C++; } else { p.x = 890; p.y = 200 + (t2C * 150); t2C++; }
-                p.mouseX = p.x; p.mouseY = p.y; p.targetY = p.y;
+                p.hp = 300; p.triple = 0; p.shield = 0; p.mana = 0; p.grenades = 0; p.freezeTimer = 0; p.cherryShots = 0; p.energyTimer = 0; p.hitTimer = 0; p.kickCharge = 0;
+                if(!p.hasMinigun) p.minigunAmmo = 0; 
+                if(p.team === 1) { p.x = 50; p.y = 200 + (t1C * 150); t1C++; } else { p.x = 1090; p.y = 200 + (t2C * 150); t2C++; }
+                p.mouseX = p.x; p.mouseY = p.y; p.targetY = p.y; p.targetX = p.x;
             });
             gameState.bullets = []; gameState.items = []; gameState.explosions = []; gameState.lightnings = [];
+            if(gameState.mode === 'futebol') resetBola(1);
             resetForNewRound(gameState, scores);
             connections.forEach(c => c.send({ type: 'restart', state: gameState, scores: scores }));
         }
@@ -423,10 +494,19 @@
             if(screenShake > 0) { ctx.translate((Math.random()-0.5)*screenShake, (Math.random()-0.5)*screenShake); screenShake -= 0.5; }
 
             ctx.fillStyle = '#050508'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = '#00f2ff11'; ctx.lineWidth = 1;
-            gridOffset = (gridOffset + 1) % 40;
-            for(let x = gridOffset; x < canvas.width; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
-            for(let y = 0; y < canvas.height; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
+
+            if (gameState.mode === 'futebol') {
+                if (imgs.quadra.complete) {
+                    ctx.globalAlpha = 0.6;
+                    ctx.drawImage(imgs.quadra, 0, 0, canvas.width, canvas.height);
+                    ctx.globalAlpha = 1;
+                }
+            } else {
+                ctx.strokeStyle = '#00f2ff11'; ctx.lineWidth = 1;
+                gridOffset = (gridOffset + 1) % 40;
+                for(let x = gridOffset; x < canvas.width; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
+                for(let y = 0; y < canvas.height; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
+            }
 
             if(isHost && !gameEnded) hostLogic();
 
@@ -440,19 +520,20 @@
         }
 
         function hostLogic() {
-            // MOVIMENTAÇÃO E IA COM LIMITADOR DE VELOCIDADE (ENERGY)
             Object.values(gameState.players).forEach(p => {
                 if(p.hp > 0) {
                     p.mana = Math.min(100, p.mana + 0.15); 
                     if(p.freezeTimer > 0) p.freezeTimer--;
                     if(p.energyTimer > 0) p.energyTimer--;
                     if(p.hitTimer > 0) p.hitTimer--;
+                    p.kickCharge = Math.min(100, (p.kickCharge || 0) + 0.6);
 
                     if(!p.isAi && p.freezeTimer <= 0) {
                         let dx = p.mouseX - p.x;
                         let dy = p.mouseY - p.y;
                         let dist = Math.sqrt(dx*dx + dy*dy);
-                        let maxSpeed = p.energyTimer > 0 ? 15 : 7; // Speed Dobrada com Energy
+                        // AUMENTO SIGNIFICATIVO DA VELOCIDADE NO FUTEBOL
+                        let maxSpeed = gameState.mode === 'futebol' ? 28 : (p.energyTimer > 0 ? 15 : 7); 
                         
                         if(dist > maxSpeed) { p.x += (dx/dist)*maxSpeed; p.y += (dy/dist)*maxSpeed; } 
                         else { p.x = p.mouseX; p.y = p.mouseY; }
@@ -460,15 +541,85 @@
                 }
 
                 if(p.isAi && p.hp > 0 && p.freezeTimer <= 0) {
-                    let dy = p.targetY - p.y; p.y += dy * 0.05;
-                    if(Math.random() < 0.03) p.targetY = Math.random() * (canvas.height - 60);
-                    if(Math.random() < 0.04) processAction(p.id, 'shoot');
-                    if(p.mana >= 100 && Math.random() < 0.02) processAction(p.id, 'special');
-                    if(p.grenades > 0 && Math.random() < 0.02) processAction(p.id, 'grenade');
+                    let minX = p.team === 1 ? 0 : canvas.width/2;
+                    let maxX = p.team === 1 ? canvas.width/2 - 60 : canvas.width - 60;
+
+                    if (gameState.mode === 'futebol') {
+                        if (gameState.bola) {
+                            let alvoY = gameState.bola.y - 30;
+                            let alvoX = p.team === 1 ? gameState.bola.x - 120 : gameState.bola.x + 120; 
+                            alvoX = Math.max(minX, Math.min(maxX, alvoX));
+                            
+                            // IA do futebol também está mais veloz!
+                            let dy = alvoY - p.y; p.y += dy * 0.12; 
+                            let dx = alvoX - p.x; p.x += dx * 0.12;
+                            
+                            p.y = Math.max(0, Math.min(canvas.height - 60, p.y));
+                            p.x = Math.max(minX, Math.min(maxX, p.x));
+                            
+                            if (p.kickCharge >= 100 && Math.hypot((p.x+30)-gameState.bola.x, (p.y+30)-gameState.bola.y) < 130) {
+                                processAction(p.id, 'shoot');
+                            }
+                        }
+                    } else {
+                        let dy = p.targetY - p.y; p.y += dy * 0.05;
+                        let dx = p.targetX - p.x; p.x += dx * 0.05;
+                        
+                        if(Math.random() < 0.03) {
+                            p.targetY = Math.random() * (canvas.height - 60);
+                            p.targetX = minX + Math.random() * (maxX - minX);
+                        }
+                        
+                        if(Math.random() < 0.04) processAction(p.id, 'shoot');
+                        if(p.mana >= 100 && Math.random() < 0.02) processAction(p.id, 'special');
+                        if(p.grenades > 0 && Math.random() < 0.02) processAction(p.id, 'grenade');
+                    }
                 }
             });
 
-            // Fade Explosões e Raios
+            if (gameState.mode === 'futebol') {
+                let b = gameState.bola;
+                if(b) {
+                    if(b.delay > 0) b.delay--;
+                    else {
+                        b.x += b.vx; b.y += b.vy;
+                        
+                        if(b.y - b.radius < 0) { b.y = b.radius; b.vy *= -1; }
+                        if(b.y + b.radius > canvas.height) { b.y = canvas.height - b.radius; b.vy *= -1; }
+                        
+                        let goalTop = 250;
+                        let goalBottom = 450;
+                        
+                        if(b.x - b.radius < 0) { 
+                            if(b.y > goalTop && b.y < goalBottom) {
+                                scores.t2++; screenShake = 20; resetBola(1); checkWinCondition(); 
+                            } else {
+                                b.x = b.radius; b.vx *= -1;
+                            }
+                        }
+                        
+                        if(b.x + b.radius > canvas.width) { 
+                            if(b.y > goalTop && b.y < goalBottom) {
+                                scores.t1++; screenShake = 20; resetBola(-1); checkWinCondition(); 
+                            } else {
+                                b.x = canvas.width - b.radius; b.vx *= -1;
+                            }
+                        }
+                        
+                        Object.values(gameState.players).forEach(p => {
+                            if (b.x + b.radius > p.x && b.x - b.radius < p.x + 60 && b.y + b.radius > p.y && b.y - b.radius < p.y + 60) {
+                                let side = p.team === 1 ? 1 : -1;
+                                b.x = p.team === 1 ? p.x + 60 + b.radius : p.x - b.radius; 
+                                b.vx = Math.abs(b.vx) * side * 1.1; 
+                                if(Math.abs(b.vx) > 30) b.vx = 30 * Math.sign(b.vx);
+                                b.vy = ((b.y - (p.y+30))/30) * 12; 
+                            }
+                        });
+                    }
+                }
+                return; 
+            }
+
             for(let i = gameState.explosions.length - 1; i >= 0; i--) {
                 gameState.explosions[i].life -= 0.025; 
                 if(gameState.explosions[i].life <= 0) gameState.explosions.splice(i, 1);
@@ -478,24 +629,23 @@
                 if(gameState.lightnings[i].life <= 0) gameState.lightnings.splice(i, 1);
             }
 
-            // Spawns
             if(Math.random() < 0.015) {
-                const dropTypes = ['cura', 'tiro', 'shield', 'granada', 'freeze', 'raio', 'cereja', 'energy'];
+                const dropTypes = ['cura', 'tiro', 'shield', 'granada', 'freeze', 'raio', 'cereja', 'energy', 'metralhadora'];
                 let type = dropTypes[Math.floor(Math.random() * dropTypes.length)];
-                if(Math.random() < 0.05) type = 'cross'; // CRUZ É MUITO RARA!
-                gameState.items.push({ x: 300 + Math.random()*400, y: -50, type: type, speed: 2.5 });
+                if(Math.random() < 0.05) type = 'cross';
+                gameState.items.push({ x: 300 + Math.random()*600, y: -50, type: type, speed: 2.5 });
             }
 
-            // Coleta
             gameState.items.forEach((it, i) => {
                 it.y += it.speed;
                 Object.values(gameState.players).forEach(p => {
                     if(p.hp > 0 && it.x < p.x + 50 && it.x + 40 > p.x && it.y < p.y + 50 && it.y + 40 > p.y) {
-                        if(it.type === 'cura') { p.hp = Math.min(300, p.hp + 100); }
+                        if(it.type === 'cura') p.hp = Math.min(300, p.hp + 100);
                         else if(it.type === 'tiro') p.triple += 5;
                         else if(it.type === 'shield') p.shield = 3; 
                         else if(it.type === 'granada') p.grenades += 1;
-                        else if(it.type === 'energy') p.energyTimer = 300; // 5 segundos
+                        else if(it.type === 'energy') p.energyTimer = 300; 
+                        else if(it.type === 'metralhadora') { p.hasMinigun = true; p.minigunAmmo = 100; }
                         else if(it.type === 'freeze') {
                             Object.values(gameState.players).forEach(enemy => { if(enemy.team !== p.team && enemy.hp > 0) enemy.freezeTimer = 60; });
                             screenShake = 5;
@@ -504,17 +654,16 @@
                         else if(it.type === 'raio') {
                             Object.values(gameState.players).forEach(enemy => {
                                 if(enemy.team !== p.team && enemy.hp > 0) {
-                                    applyDamage(enemy, 40); // Raio global
+                                    applyDamage(enemy, 40); 
                                     gameState.lightnings.push({x: enemy.x + 30, y: enemy.y, life: 1, radius: 40});
                                 }
                             });
                             screenShake = 15;
                         }
                         else if(it.type === 'cross') {
-                            // DIVINE CROSS - 3 Raios Aleatórios
                             for(let r=0; r<3; r++) {
-                                let lx = p.team === 1 ? 550 + Math.random()*400 : 50 + Math.random()*400;
-                                let ly = Math.random() * 550;
+                                let lx = p.team === 1 ? (canvas.width/2 + 50) + Math.random()*400 : 50 + Math.random()*400;
+                                let ly = Math.random() * canvas.height;
                                 gameState.lightnings.push({x: lx, y: ly, life: 1, radius: 80});
                                 Object.values(gameState.players).forEach(enemy => {
                                     if(enemy.team !== p.team && Math.hypot((enemy.x+30)-lx, (enemy.y+30)-ly) < 100) applyDamage(enemy, 80);
@@ -527,7 +676,6 @@
                 });
             });
 
-            // Tiros
             for(let i = gameState.bullets.length - 1; i >= 0; i--) {
                 let b = gameState.bullets[i];
                 b.x += b.vx; b.y += b.vy;
@@ -541,21 +689,19 @@
                     }
                 });
 
-                // AIRBURST LÓGICA
                 let triggeredAirburst = false;
                 if(b.type === 'grenade' || b.type === 'special') {
-                    if(b.team === 1 && b.x > 750) triggeredAirburst = true; 
-                    if(b.team === 2 && b.x < 250) triggeredAirburst = true; 
+                    if(b.team === 1 && b.x > canvas.width/2 + 350) triggeredAirburst = true; 
+                    if(b.team === 2 && b.x < canvas.width/2 - 350) triggeredAirburst = true; 
                 }
 
                 let triggeredCherrySplit = false;
                 if(b.type === 'cherry' && !hitPlayer) {
-                    if(b.team === 1 && b.x > 600) triggeredCherrySplit = true; 
-                    if(b.team === 2 && b.x < 400) triggeredCherrySplit = true; 
+                    if(b.team === 1 && b.x > canvas.width/2 + 50) triggeredCherrySplit = true; 
+                    if(b.team === 2 && b.x < canvas.width/2 - 50) triggeredCherrySplit = true; 
                 }
 
                 if (triggeredCherrySplit) {
-                    // CEREJA ESTILHAÇA EM 5 TIROS!
                     let side = b.team === 1 ? 1 : -1;
                     [-8, -4, 0, 4, 8].forEach(ang => {
                         gameState.bullets.push({ owner: b.owner, team: b.team, type: 'cherry_small', x: b.x, y: b.y, vx: 15 * side, vy: ang });
@@ -568,7 +714,7 @@
 
                     if (b.type === 'grenade' || b.type === 'special') {
                         let isSpecial = b.type === 'special';
-                        let radius = isSpecial ? 160 : 120;
+                        let radius = isSpecial ? 250 : 180; 
                         let dmg = isSpecial ? 80 : 50; 
                         let color = isSpecial ? 'rgba(0, 136, 255, 0.7)' : 'rgba(255, 85, 0, 0.7)';
 
@@ -582,8 +728,8 @@
                         });
                     } 
                     else if (hitPlayer) {
-                        let dmg = 15; // Normal
-                        if(b.type === 'minigun') dmg = 25;
+                        let dmg = 15;
+                        if(b.type === 'minigun') dmg = 12; 
                         if(b.type === 'cherry') dmg = 80;
                         if(b.type === 'cherry_small') dmg = 15;
                         
@@ -597,7 +743,29 @@
         }
 
         function renderGame() {
-            // Raios Divinos
+            ctx.fillStyle = 'rgba(0, 255, 204, 0.6)';
+            ctx.shadowBlur = 20; ctx.shadowColor = '#00ffcc';
+            ctx.fillRect(canvas.width / 2 - 4, 0, 8, canvas.height);
+            ctx.shadowBlur = 0;
+
+            if (gameState.mode === 'futebol') {
+                let goalTop = 250, goalH = 200;
+                ctx.fillStyle = 'rgba(0, 255, 65, 0.3)';
+                ctx.fillRect(0, goalTop, 20, goalH);
+                ctx.fillStyle = 'rgba(255, 0, 255, 0.3)';
+                ctx.fillRect(canvas.width-20, goalTop, 20, goalH);
+
+                if (gameState.bola) {
+                    let b = gameState.bola;
+                    ctx.shadowBlur = 15; ctx.shadowColor = 'white';
+                    ctx.fillStyle = 'white';
+                    ctx.beginPath();
+                    ctx.arc(b.x, b.y, b.radius, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+            }
+
             gameState.lightnings.forEach(lt => {
                 let r = lt.radius || 40;
                 ctx.fillStyle = `rgba(255, 255, 100, ${lt.life})`;
@@ -608,7 +776,6 @@
                 ctx.shadowBlur = 0;
             });
 
-            // Explosões em Área
             gameState.explosions.forEach(exp => {
                 ctx.beginPath();
                 let currentRadius = exp.radius * (1.2 - exp.life);
@@ -620,13 +787,11 @@
                 ctx.globalAlpha = 1;
             });
 
-            // Itens
             gameState.items.forEach(it => {
                 ctx.shadowBlur = 15; ctx.shadowColor = '#fff';
                 if(imgs[it.type] && imgs[it.type].complete) ctx.drawImage(imgs[it.type], it.x, it.y, 40, 40);
             });
 
-            // Tiros e Armas
             gameState.bullets.forEach(b => {
                 if(b.type === 'normal') {
                     let color = b.team === 1 ? '#00ff41' : '#ff00ff';
@@ -656,22 +821,19 @@
             });
             ctx.globalAlpha = 1;
 
-            // Jogadores
             Object.values(gameState.players).forEach(p => {
                 if(p.hp <= 0) { ctx.globalAlpha = 0.3; }
                 else if(p.hitTimer > 0) {
-                    // Círculo Vermelho de Impacto de Dano
                     ctx.fillStyle = 'rgba(255, 0, 0, 0.5)'; ctx.beginPath(); ctx.arc(p.x+30, p.y+30, 40, 0, Math.PI*2); ctx.fill();
-                    ctx.globalAlpha = 0.5 + (Math.random() * 0.5); // Piscar
+                    ctx.globalAlpha = 0.5 + (Math.random() * 0.5); 
                 }
                 
                 if(p.freezeTimer > 0) { ctx.shadowBlur = 30; ctx.shadowColor = '#00ffff'; }
-                else if(p.energyTimer > 0) { ctx.shadowBlur = 30; ctx.shadowColor = '#ffff00'; } // Brilho de energia
+                else if(p.energyTimer > 0) { ctx.shadowBlur = 30; ctx.shadowColor = '#ffff00'; } 
                 else { ctx.shadowBlur = p.team === 1 ? 20 : 15; ctx.shadowColor = p.team === 1 ? 'rgba(0, 255, 65, 0.4)' : 'rgba(255, 0, 255, 0.4)'; }
                 
                 if(imgs[p.sprite] && imgs[p.sprite].complete) ctx.drawImage(imgs[p.sprite], p.x, p.y, 60, 60);
 
-                // Render Metralhadora UNB10
                 if(p.hasMinigun && imgs.metralhadora.complete) {
                     let wX = p.team === 1 ? p.x + 30 : p.x - 10;
                     ctx.drawImage(imgs.metralhadora, wX, p.y + 20, 40, 20);
@@ -696,8 +858,16 @@
             Object.values(gameState.players).forEach(p => {
                 let color = p.team === 1 ? 'var(--p1)' : 'var(--p2)';
                 let hpPercent = Math.floor(Math.max(0, p.hp) / p.maxHp * 100);
-                let manaShow = Math.floor(p.mana);
                 
+                let barraExtraHTML = '';
+                if (gameState.mode === 'futebol') {
+                    let kickVal = Math.floor(p.kickCharge || 0);
+                    barraExtraHTML = `<div class="mana-bar"><div class="kick-fill" style="width: ${kickVal}%;"></div></div>`;
+                } else {
+                    let manaShow = Math.floor(p.mana);
+                    barraExtraHTML = `<div class="mana-bar"><div class="mana-fill" style="width: ${manaShow}%;"></div></div>`;
+                }
+
                 let html = `
                     <div style="${hpPercent === 0 ? 'opacity: 0.5;' : ''}">
                         <div class="hp-label">
@@ -705,8 +875,9 @@
                             <span style="color:${p.hitTimer > 0 ? 'red' : 'white'}">${hpPercent}%</span>
                         </div>
                         <div class="hp-bar"><div class="hp-fill" style="width: ${hpPercent}%; background: ${color}; box-shadow: 0 0 10px ${color};"></div></div>
-                        <div class="mana-bar"><div class="mana-fill" style="width: ${manaShow}%;"></div></div>
+                        ${barraExtraHTML}
                         <div style="font-size: 0.7rem; color: #ff0044; text-align: right;">${p.cherryShots > 0 ? 'CEREJA ATIVA ('+p.cherryShots+')' : ''}</div>
+                        <div style="font-size: 0.7rem; color: #ffff00; text-align: right;">${p.hasMinigun && p.minigunAmmo < 9999 ? 'METRALHADORA: '+p.minigunAmmo : ''}</div>
                     </div>`;
                 if(p.team === 1) t1HTML += html; else t2HTML += html;
             });
